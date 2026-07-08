@@ -1,7 +1,7 @@
 import { Form, Head } from '@inertiajs/react';
+import BusinessInvitationAlert from '@/components/business-invitation-alert';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
-import TeamInvitationAlert from '@/components/team-invitation-alert';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,31 +9,32 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
-import type { TeamInvitationContext } from '@/types';
+import type { BusinessInvitationContext } from '@/types';
 
 type Props = {
     passwordRules: string;
-    teamInvitation?: TeamInvitationContext | null;
+    businessInvitation?: BusinessInvitationContext | null;
 };
 
-export default function Register({
-    passwordRules,
-    teamInvitation,
-}: Props) {
+export default function Register({ passwordRules, businessInvitation }: Props) {
     return (
         <>
             <Head title="Register" />
             <Form
-                {...store.form(teamInvitation ? { query: { invitation: teamInvitation.code } } : undefined)}
+                {...store.form(
+                    businessInvitation
+                        ? { query: { invitation: businessInvitation.code } }
+                        : undefined,
+                )}
                 resetOnSuccess={['password', 'password_confirmation']}
                 disableWhileProcessing
                 className="flex flex-col gap-6"
             >
                 {({ processing, errors }) => (
                     <>
-                        {teamInvitation && (
-                            <TeamInvitationAlert
-                                invitation={teamInvitation}
+                        {businessInvitation && (
+                            <BusinessInvitationAlert
+                                invitation={businessInvitation}
                                 action="Register"
                             />
                         )}
@@ -118,16 +119,16 @@ export default function Register({
                             Already have an account?{' '}
                             <TextLink
                                 href={
-                                    teamInvitation
+                                    businessInvitation
                                         ? login.url({
                                               query: {
                                                   invitation:
-                                                      teamInvitation.code,
+                                                      businessInvitation.code,
                                               },
                                           })
                                         : login()
                                 }
-                                data-test="team-invitation-login-link"
+                                data-test="business-invitation-login-link"
                                 tabIndex={6}
                             >
                                 Log in

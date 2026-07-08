@@ -1,10 +1,13 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import { dashboard, login } from '@/routes';
 import { register } from '@/routes';
+import type { PageProps } from '@/types';
 
 export default function Welcome() {
-    const { auth, currentTeam } = usePage().props;
-    const dashboardUrl = currentTeam ? dashboard(currentTeam.slug) : '/';
+    const { auth, currentBusiness } = usePage<PageProps>().props;
+    const dashboardUrl = currentBusiness
+        ? dashboard(currentBusiness.slug)
+        : '/';
 
     return (
         <>

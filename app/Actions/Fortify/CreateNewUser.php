@@ -2,10 +2,10 @@
 
 namespace App\Actions\Fortify;
 
-use App\Actions\Teams\AcceptTeamInvitation;
+use App\Actions\Businesses\AcceptBusinessInvitation;
 use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
-use App\Models\TeamInvitation;
+use App\Models\BusinessInvitation;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -16,7 +16,7 @@ class CreateNewUser implements CreatesNewUsers
     use PasswordValidationRules, ProfileValidationRules;
 
     public function __construct(
-        private readonly AcceptTeamInvitation $acceptTeamInvitation,
+        private readonly AcceptBusinessInvitation $acceptBusinessInvitation,
     ) {
         //
     }
@@ -24,7 +24,7 @@ class CreateNewUser implements CreatesNewUsers
     /**
      * Validate and create a newly registered user.
      *
-     * @param array<string, string> $input
+     * @param  array<string, string>  $input
      */
     public function create(array $input): User
     {
@@ -36,8 +36,8 @@ class CreateNewUser implements CreatesNewUsers
         $invitationCode = request()->query('invitation');
         $invitation = null;
         if (is_string($invitationCode)) {
-            $invitation = TeamInvitation::query()
-                ->with('team')
+            $invitation = BusinessInvitation::query()
+                ->with('business')
                 ->where('code', $invitationCode)
                 ->whereNull('accepted_at')
                 ->where(fn ($query) => $query
@@ -54,7 +54,7 @@ class CreateNewUser implements CreatesNewUsers
             ]);
 
             if ($invitation) {
-                $this->acceptTeamInvitation->handle($user, $invitation);
+                $this->acceptBusinessInvitation->handle($user, $invitation);
             }
 
             return $user;

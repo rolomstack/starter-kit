@@ -3,7 +3,7 @@ import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { Breadcrumbs } from '@/components/breadcrumbs';
-import { TeamSwitcher } from '@/components/team-switcher';
+import { BusinessSwitcher } from '@/components/business-switcher';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -35,6 +35,7 @@ import { useCurrentUrl } from '@/hooks/use-current-url';
 import { useInitials } from '@/hooks/use-initials';
 import { cn, toUrl } from '@/lib/utils';
 import { dashboard } from '@/routes';
+import type { PageProps } from '@/types';
 import type { BreadcrumbItem, NavItem } from '@/types';
 
 type Props = {
@@ -58,11 +59,13 @@ const activeItemStyles =
     'text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100';
 
 export function AppHeader({ breadcrumbs = [] }: Props) {
-    const page = usePage();
-    const { auth, currentTeam } = page.props;
+    const page = usePage<PageProps>();
+    const { auth, currentBusiness } = page.props;
     const getInitials = useInitials();
     const { isCurrentUrl, whenCurrentUrl } = useCurrentUrl();
-    const dashboardUrl = currentTeam ? dashboard(currentTeam.slug) : '/';
+    const dashboardUrl = currentBusiness
+        ? dashboard(currentBusiness.slug)
+        : '/';
 
     const mainNavItems: NavItem[] = [
         {
@@ -240,7 +243,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                             </DropdownMenuContent>
                         </DropdownMenu>
 
-                        <TeamSwitcher inHeader />
+                        <BusinessSwitcher inHeader />
                     </div>
                 </div>
             </div>

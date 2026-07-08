@@ -1,10 +1,10 @@
 import { Link, usePage } from '@inertiajs/react';
 import { LayoutGrid } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
+import { BusinessSwitcher } from '@/components/business-switcher';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
-import { TeamSwitcher } from '@/components/team-switcher';
 import {
     Sidebar,
     SidebarContent,
@@ -15,12 +15,13 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
+import type { PageProps } from '@/types';
 import type { NavItem } from '@/types';
 
 export function AppSidebar() {
-    const page = usePage();
-    const dashboardUrl = page.props.currentTeam
-        ? dashboard(page.props.currentTeam.slug)
+    const page = usePage<PageProps>();
+    const dashboardUrl = page.props.currentBusiness
+        ? dashboard(page.props.currentBusiness.slug)
         : '/';
 
     const mainNavItems: NavItem[] = [
@@ -47,7 +48,7 @@ export function AppSidebar() {
                 </SidebarMenu>
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <TeamSwitcher />
+                        <BusinessSwitcher />
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarHeader>

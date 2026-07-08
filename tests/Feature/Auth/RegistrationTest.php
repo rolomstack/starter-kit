@@ -1,8 +1,8 @@
 <?php
 
-use App\Enums\TeamRole;
-use App\Models\Team;
-use App\Models\TeamInvitation;
+use App\Enums\BusinessRole;
+use App\Models\Business;
+use App\Models\BusinessInvitation;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -12,13 +12,13 @@ test('registration screen can be rendered', function () {
     $response->assertOk();
 });
 
-test('registration screen includes team invitation context', function () {
+test('registration screen includes business invitation context', function () {
     $owner = User::factory()->create();
-    $team = Team::factory()->create(['name' => 'Laravel Team']);
-    $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
+    $business = Business::factory()->create(['name' => 'Laravel Business']);
+    $business->members()->attach($owner, ['role' => BusinessRole::Owner->value]);
 
-    $invitation = TeamInvitation::factory()->create([
-        'team_id' => $team->id,
+    $invitation = BusinessInvitation::factory()->create([
+        'business_id' => $business->id,
         'email' => 'invited@example.com',
         'invited_by' => $owner->id,
     ]);
@@ -28,8 +28,8 @@ test('registration screen includes team invitation context', function () {
     $response->assertOk();
     $response->assertInertia(fn (Assert $page) => $page
         ->component('auth/register')
-        ->where('teamInvitation.code', $invitation->code)
-        ->where('teamInvitation.teamName', 'Laravel Team'),
+        ->where('businessInvitation.code', $invitation->code)
+        ->where('businessInvitation.businessName', 'Laravel Business'),
     );
 });
 
@@ -43,16 +43,16 @@ test('new users can register', function () {
 
     $this->assertAuthenticated();
 
-    $response->assertRedirect(route('teams.create'));
+    $response->assertRedirect(route('businesses.create'));
 });
 
-test('new users can register and join team immediately if invited', function () {
+test('new users can register and join business immediately if invited', function () {
     $owner = User::factory()->create();
-    $team = Team::factory()->create(['name' => 'Laravel Team']);
-    $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
+    $business = Business::factory()->create(['name' => 'Laravel Business']);
+    $business->members()->attach($owner, ['role' => BusinessRole::Owner->value]);
 
-    $invitation = TeamInvitation::factory()->create([
-        'team_id' => $team->id,
+    $invitation = BusinessInvitation::factory()->create([
+        'business_id' => $business->id,
         'email' => 'test@example.com',
         'invited_by' => $owner->id,
     ]);
@@ -67,20 +67,20 @@ test('new users can register and join team immediately if invited', function () 
     $this->assertAuthenticated();
 
     $user = User::where('email', 'test@example.com')->first();
-    expect($user->belongsToTeam($team))->toBeTrue();
+    expect($user->belongsToBusiness($business))->toBeTrue();
 
-    $response->assertRedirect(route('dashboard', ['current_team' => $team->slug]));
+    $response->assertRedirect(route('dashboard', ['current_business' => $business->slug]));
 });
 
-test('team creation fails with invalid phone country code during onboarding', function () {
+test('business creation fails with invalid phone country code during onboarding', function () {
     $user = User::factory()->create();
-    $user->teams()->detach();
-    $user->ownedTeams()->delete();
-    $user->update(['current_team_id' => null]);
+    $user->businesses()->detach();
+    $user->ownedBusinesses()->delete();
+    $user->update(['current_business_id' => null]);
 
     $response = $this
         ->actingAs($user)
-        ->post(route('teams.store'), [
+        ->post(route('businesses.store'), [
             'name' => 'Acme Corp',
             'phone_country' => 'XX', // Invalid country
             'phone' => '555-555-5555',
@@ -89,15 +89,15 @@ test('team creation fails with invalid phone country code during onboarding', fu
     $response->assertSessionHasErrors(['phone_country']);
 });
 
-test('team creation fails with incorrect phone number format for selected country during onboarding', function () {
+test('business creation fails with incorrect phone number format for selected country during onboarding', function () {
     $user = User::factory()->create();
-    $user->teams()->detach();
-    $user->ownedTeams()->delete();
-    $user->update(['current_team_id' => null]);
+    $user->businesses()->detach();
+    $user->ownedBusinesses()->delete();
+    $user->update(['current_business_id' => null]);
 
     $response = $this
         ->actingAs($user)
-        ->post(route('teams.store'), [
+        ->post(route('businesses.store'), [
             'name' => 'Acme Corp',
             'phone_country' => 'US',
             'phone' => '07123456789', // Invalid for US
@@ -108,22 +108,22 @@ test('team creation fails with incorrect phone number format for selected countr
 
 test('users can complete setup business onboarding', function () {
     $user = User::factory()->create();
-    $user->teams()->detach();
-    $user->ownedTeams()->delete();
-    $user->update(['current_team_id' => null]);
+    $user->businesses()->detach();
+    $user->ownedBusinesses()->delete();
+    $user->update(['current_business_id' => null]);
 
     $response = $this
         ->actingAs($user)
-        ->post(route('teams.store'), [
+        ->post(route('businesses.store'), [
             'name' => 'Acme Corp',
             'phone_country' => 'US',
             'phone' => '555-555-5555',
         ]);
 
-    $team = Team::where('name', 'Acme Corp')->first();
-    expect($team)->not->toBeNull();
-    expect($team->is_personal)->toBeTrue();
-    expect($team->phone)->toBe('555-555-5555');
+    $business = Business::where('name', 'Acme Corp')->first();
+    expect($business)->not->toBeNull();
+    expect($business->is_personal)->toBeTrue();
+    expect($business->phone)->toBe('555-555-5555');
 
-    $response->assertRedirect(route('dashboard', ['current_team' => $team->slug]));
+    $response->assertRedirect(route('dashboard', ['current_business' => $business->slug]));
 });
