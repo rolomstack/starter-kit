@@ -2,6 +2,7 @@
 
 namespace App\Rules;
 
+use App\Enums\Country;
 use Closure;
 use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -83,19 +84,9 @@ class Phone implements DataAwareRule, ValidationRule
      */
     protected function validateFormat(string $value, string $countryCode): bool
     {
-        // Simple regex map for common country phone formats (E.164 compatibility)
-        $patterns = [
-            'US' => '/^(?:\+?1)?[2-9]\d{9}$/',  // 10 digits, starting with 2-9
-            'CA' => '/^(?:\+?1)?[2-9]\d{9}$/',
-            'GB' => '/^(?:\+?44|0)7\d{9}$/',    // UK mobile (07...)
-            'AU' => '/^(?:\+?61|0)4\d{8}$/',    // Australia mobile (04...)
-            'NZ' => '/^(?:\+?64|0)2\d{7,9}$/',   // New Zealand mobile (02...)
-            'NG' => '/^(?:\+?234|0)?[789]\d{9}$/', // Nigeria (080..., +23480...)
-            // Fallback generic format: E.164 format (with or without '+')
-            'ANY' => '/^\+?[1-9]\d{6,14}$/',
-        ];
+        $country = Country::tryFrom($countryCode);
 
-        $pattern = $patterns[$countryCode] ?? $patterns['ANY'];
+        $pattern = $country ? $country->regex() : '/^\+?[1-9]\d{6,14}$/';
 
         return (bool) preg_match($pattern, $value);
     }

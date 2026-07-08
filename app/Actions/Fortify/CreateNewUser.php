@@ -5,10 +5,12 @@ namespace App\Actions\Fortify;
 use App\Actions\Teams\CreateTeam;
 use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
+use App\Enums\Country;
 use App\Models\User;
 use App\Rules\Phone;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\Enum;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
 
 class CreateNewUser implements CreatesNewUsers
@@ -30,7 +32,7 @@ class CreateNewUser implements CreatesNewUsers
         Validator::make($input, [
             ...$this->profileRules(),
             'business_name' => ['required', 'string', 'max:50', 'min:3'],
-            'phone_country' => ['required', 'string', 'in:US,CA,GB,AU,NZ,NG'],
+            'phone_country' => ['required', new Enum(Country::class)],
             'phone' => ['required', 'string', new Phone('phone_country')],
             'password' => $this->passwordRules(),
         ])->validate();

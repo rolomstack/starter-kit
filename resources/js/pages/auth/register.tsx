@@ -20,58 +20,44 @@ import { login } from '@/routes';
 import { store } from '@/routes/register';
 import type { TeamInvitationContext } from '@/types';
 
-const COUNTRIES = [
-    {
-        code: 'US',
-        name: 'United States',
-        flag: '🇺🇸',
-        dialCode: '+1',
-        placeholder: '201 555 0123',
-    },
-    {
-        code: 'CA',
-        name: 'Canada',
-        flag: '🇨🇦',
-        dialCode: '+1',
-        placeholder: '201 555 0123',
-    },
-    {
-        code: 'GB',
-        name: 'United Kingdom',
-        flag: '🇬🇧',
-        dialCode: '+44',
-        placeholder: '7123 456789',
-    },
-    {
-        code: 'AU',
-        name: 'Australia',
-        flag: '🇦🇺',
-        dialCode: '+61',
-        placeholder: '412 345 678',
-    },
-    {
-        code: 'NZ',
-        name: 'New Zealand',
-        flag: '🇳🇿',
-        dialCode: '+64',
-        placeholder: '21 234 5678',
-    },
-    {
-        code: 'NG',
-        name: 'Nigeria',
-        flag: '🇳🇬',
-        dialCode: '+234',
-        placeholder: '803 123 4567',
-    },
-] as const;
+type CountryData = {
+    code: string;
+    name: string;
+    flag: string;
+    dialCode: string;
+};
+
+const DEFAULT_COUNTRIES: CountryData[] = [
+    { code: 'US', name: 'United States', flag: '🇺🇸', dialCode: '+1' },
+    { code: 'CA', name: 'Canada', flag: '🇨🇦', dialCode: '+1' },
+    { code: 'GB', name: 'United Kingdom', flag: '🇬🇧', dialCode: '+44' },
+    { code: 'AU', name: 'Australia', flag: '🇦🇺', dialCode: '+61' },
+    { code: 'NZ', name: 'New Zealand', flag: '🇳🇿', dialCode: '+64' },
+    { code: 'NG', name: 'Nigeria', flag: '🇳🇬', dialCode: '+234' },
+];
+
+const PLACEHOLDERS: Record<string, string> = {
+    US: '201 555 0123',
+    CA: '201 555 0123',
+    GB: '7123 456789',
+    AU: '412 345 678',
+    NZ: '21 234 5678',
+    NG: '803 123 4567',
+};
 
 type Props = {
     passwordRules: string;
     teamInvitation?: TeamInvitationContext | null;
+    countries?: CountryData[];
 };
 
-export default function Register({ passwordRules, teamInvitation }: Props) {
+export default function Register({
+    passwordRules,
+    teamInvitation,
+    countries = [],
+}: Props) {
     const [phoneCountry, setPhoneCountry] = useState<string>('US');
+    const countriesList = countries.length > 0 ? countries : DEFAULT_COUNTRIES;
     return (
         <>
             <Head title="Register" />
@@ -156,7 +142,7 @@ export default function Register({ passwordRules, teamInvitation }: Props) {
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {COUNTRIES.map((country) => (
+                                            {countriesList.map((country) => (
                                                 <SelectItem
                                                     key={country.code}
                                                     value={country.code}
@@ -178,9 +164,8 @@ export default function Register({ passwordRules, teamInvitation }: Props) {
                                         autoComplete="phone"
                                         name="phone"
                                         placeholder={
-                                            COUNTRIES.find(
-                                                (c) => c.code === phoneCountry,
-                                            )?.placeholder || 'Phone number'
+                                            PLACEHOLDERS[phoneCountry] ||
+                                            'Phone number'
                                         }
                                     />
                                 </InputGroup>
