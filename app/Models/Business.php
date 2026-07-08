@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Concerns\GeneratesUniqueBusinessSlugs;
+use App\Concerns\HasPhoneVerification;
+use App\Contracts\MustVerifyPhone;
 use App\Enums\BusinessRole;
 use Database\Factories\BusinessFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -12,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 
 /**
@@ -19,6 +22,9 @@ use Illuminate\Support\Carbon;
  * @property string $name
  * @property string $slug
  * @property bool $is_personal
+ * @property string|null $phone
+ * @property Carbon|null $phone_verified_at
+ * @property string|null $email
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
@@ -27,10 +33,10 @@ use Illuminate\Support\Carbon;
  * @property-read Collection<int, User> $members
  */
 #[Fillable(['name', 'slug', 'is_personal', 'phone', 'email'])]
-class Business extends Model
+class Business extends Model implements MustVerifyPhone
 {
     /** @use HasFactory<BusinessFactory> */
-    use GeneratesUniqueBusinessSlugs, HasFactory, SoftDeletes;
+    use GeneratesUniqueBusinessSlugs, HasFactory, HasPhoneVerification, Notifiable, SoftDeletes;
 
     /**
      * Bootstrap the model and its traits.
@@ -104,6 +110,7 @@ class Business extends Model
     {
         return [
             'is_personal' => 'boolean',
+            'phone_verified_at' => 'datetime',
         ];
     }
 
