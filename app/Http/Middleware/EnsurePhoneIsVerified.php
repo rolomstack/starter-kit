@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Contracts\MustVerifyPhone;
 use App\Models\Business;
 use Closure;
 use Illuminate\Http\Request;
@@ -17,30 +16,30 @@ class EnsurePhoneIsVerified
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $user = $request->user();
+        $business = $this->resolveBusiness($request);
 
-        if (! $user) {
+        if (! $business || ! $business->getPhoneForVerification() || $business->hasVerifiedPhone()) {
             return $next($request);
         }
 
-        // Check Business phone verification
-        $businessRouteParam = $request->route('current_business') ?? $request->route('business');
-        if ($businessRouteParam) {
-            $business = $businessRouteParam;
-            if (is_string($business)) {
-                $business = Business::where('slug', $business)->first();
-            }
-
-            if ($business instanceof MustVerifyPhone && $business->getPhoneForVerification() && ! $business->hasVerifiedPhone()) {
-                $slug = is_string($businessRouteParam) ? $businessRouteParam : $business->slug;
-                if (! $request->is("{$slug}/phone/verify", "{$slug}/phone/verify/resend", 'logout')) {
-                    return $request->expectsJson()
-                        ? abort(403, 'The business phone number is not verified.')
-                        : redirect()->route('businesses.phone.notice', ['current_business' => $slug]);
-                }
-            }
+        if ($request->is("{$business->slug}/phone/verify", "{$business->slug}/phone/verify/resend", 'logout')) {
+            return $next($request);
         }
 
-        return $next($request);
+        return $request->expectsJson()
+            ? abort(403, 'The business phone number is not verified.')
+            : redirect()->route('businesses.phone.notice', ['current_business' => $business]);
+    }
+
+    /**
+     * Resolve the business model from the route parameters.
+     */
+    protected function resolveBusiness(Request $request): ?Business
+    {
+        $business = $request->route('current_business') ?? $request->route('business');
+
+        return is_string($business)
+            ? Business::where('slug', $business)->first()
+            : $business;
     }
 }

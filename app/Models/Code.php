@@ -14,6 +14,8 @@ class Code extends Model
 
     /**
      * Get the owning tokenable model.
+     *
+     * @return MorphTo<Model, $this>
      */
     public function tokenable(): MorphTo
     {
@@ -22,6 +24,9 @@ class Code extends Model
 
     /**
      * Scope a query to only include phone verification codes.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
      */
     public function scopePhoneVerification(Builder $query): Builder
     {

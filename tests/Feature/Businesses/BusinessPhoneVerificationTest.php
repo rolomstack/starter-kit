@@ -2,6 +2,7 @@
 
 use App\Enums\BusinessRole;
 use App\Models\Business;
+use App\Models\Code;
 use App\Models\User;
 use App\Notifications\VerifyPhoneNotification;
 use Illuminate\Support\Facades\Notification;
@@ -46,7 +47,7 @@ test('business phone can be verified with correct token', function () {
 
     $token = '123456';
     $business->codes()->create([
-        'purpose' => 'phone_verification',
+        'purpose' => Code::PURPOSE_PHONE_VERIFICATION,
         'recipient' => $business->phone,
         'code' => $token,
         'expires_at' => now()->addMinutes(15),
@@ -71,7 +72,7 @@ test('business phone verification fails with incorrect token', function () {
 
     $token = '123456';
     $business->codes()->create([
-        'purpose' => 'phone_verification',
+        'purpose' => Code::PURPOSE_PHONE_VERIFICATION,
         'recipient' => $business->phone,
         'code' => $token,
         'expires_at' => now()->addMinutes(15),
