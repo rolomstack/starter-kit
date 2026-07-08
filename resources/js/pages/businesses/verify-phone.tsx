@@ -1,10 +1,15 @@
 import { useForm, Head } from '@inertiajs/react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import {
+    InputOTP,
+    InputOTPGroup,
+    InputOTPSlot,
+    InputOTPSeparator,
+} from '@/components/ui/input-otp';
 import { Spinner } from '@/components/ui/spinner';
-import { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator } from '@/components/ui/input-otp';
 import { logout } from '@/routes';
 import { verify, resend } from '@/routes/businesses/phone';
-import { toast } from 'sonner';
 
 interface BusinessInfo {
     name: string;
@@ -12,7 +17,13 @@ interface BusinessInfo {
     phone: string;
 }
 
-export default function BusinessVerifyPhone({ business, status }: { business: BusinessInfo; status?: string }) {
+export default function BusinessVerifyPhone({
+    business,
+    status,
+}: {
+    business: BusinessInfo;
+    status?: string;
+}) {
     const { data, setData, post, processing, errors } = useForm({
         code: '',
     });
@@ -26,7 +37,9 @@ export default function BusinessVerifyPhone({ business, status }: { business: Bu
         e.preventDefault();
         post(resend.url({ current_business: business.slug }), {
             onSuccess: () => {
-                toast.success('A new verification code has been sent to your email.');
+                toast.success(
+                    'A new verification code has been sent to your email.',
+                );
             },
         });
     };
@@ -48,7 +61,7 @@ export default function BusinessVerifyPhone({ business, status }: { business: Bu
 
             <form onSubmit={submit} className="space-y-6">
                 <div className="flex flex-col items-center justify-center space-y-4">
-                    <label className="text-sm font-medium text-foreground text-center">
+                    <label className="text-center text-sm font-medium text-foreground">
                         Verification Code for {business.name}
                     </label>
                     <InputOTP
@@ -58,26 +71,48 @@ export default function BusinessVerifyPhone({ business, status }: { business: Bu
                         disabled={processing}
                     >
                         <InputOTPGroup>
-                            <InputOTPSlot index={0} className="w-10 h-12 text-lg" />
-                            <InputOTPSlot index={1} className="w-10 h-12 text-lg" />
-                            <InputOTPSlot index={2} className="w-10 h-12 text-lg" />
+                            <InputOTPSlot
+                                index={0}
+                                className="h-12 w-10 text-lg"
+                            />
+                            <InputOTPSlot
+                                index={1}
+                                className="h-12 w-10 text-lg"
+                            />
+                            <InputOTPSlot
+                                index={2}
+                                className="h-12 w-10 text-lg"
+                            />
                         </InputOTPGroup>
                         <InputOTPSeparator />
                         <InputOTPGroup>
-                            <InputOTPSlot index={3} className="w-10 h-12 text-lg" />
-                            <InputOTPSlot index={4} className="w-10 h-12 text-lg" />
-                            <InputOTPSlot index={5} className="w-10 h-12 text-lg" />
+                            <InputOTPSlot
+                                index={3}
+                                className="h-12 w-10 text-lg"
+                            />
+                            <InputOTPSlot
+                                index={4}
+                                className="h-12 w-10 text-lg"
+                            />
+                            <InputOTPSlot
+                                index={5}
+                                className="h-12 w-10 text-lg"
+                            />
                         </InputOTPGroup>
                     </InputOTP>
                     {errors.code && (
-                        <div className="text-sm text-destructive font-medium mt-1">
+                        <div className="mt-1 text-sm font-medium text-destructive">
                             {errors.code}
                         </div>
                     )}
                 </div>
 
                 <div className="space-y-4">
-                    <Button type="submit" className="w-full" disabled={processing || data.code.length < 6}>
+                    <Button
+                        type="submit"
+                        className="w-full"
+                        disabled={processing || data.code.length < 6}
+                    >
                         {processing && <Spinner />}
                         Verify Business Phone
                     </Button>
@@ -87,7 +122,7 @@ export default function BusinessVerifyPhone({ business, status }: { business: Bu
                             type="button"
                             onClick={resendCode}
                             disabled={processing}
-                            className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-4 bg-transparent border-0 cursor-pointer"
+                            className="cursor-pointer border-0 bg-transparent text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
                         >
                             Resend verification code
                         </button>
@@ -95,7 +130,7 @@ export default function BusinessVerifyPhone({ business, status }: { business: Bu
                         <button
                             type="button"
                             onClick={handleLogout}
-                            className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-4 bg-transparent border-0 cursor-pointer"
+                            className="cursor-pointer border-0 bg-transparent text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
                         >
                             Log out
                         </button>
@@ -108,5 +143,6 @@ export default function BusinessVerifyPhone({ business, status }: { business: Bu
 
 BusinessVerifyPhone.layout = {
     title: 'Verify business phone number',
-    description: 'Please enter the 6-digit verification code sent to your email to verify your business phone number.',
+    description:
+        'Please enter the 6-digit verification code sent to your email to verify your business phone number.',
 };

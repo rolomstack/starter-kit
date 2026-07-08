@@ -23,7 +23,8 @@ type Props = {
 export default function BusinessesCreate({ countries = [] }: Props) {
     const { props } = usePage<PageProps>();
     const userEmail = props.auth.user?.email || '';
-    const countriesList = countries.length > 0 ? countries : (props.countries ?? []);
+    const countriesList =
+        countries.length > 0 ? countries : (props.countries ?? []);
     const [phoneCountry, setPhoneCountry] = useState<string>(
         countriesList[0]?.code || 'US',
     );

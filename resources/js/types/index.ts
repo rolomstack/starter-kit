@@ -24,4 +24,3 @@ export type PageProps<
     businesses: Business[];
     countries?: CountryData[];
 };
-

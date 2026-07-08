@@ -94,15 +94,23 @@ export default function CreateBusinessModal({ children }: PropsWithChildren) {
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                {countriesList.map((country) => (
-                                                    <SelectItem
-                                                        key={country.code}
-                                                        value={country.code}
-                                                    >
-                                                        <span>{country.flag}</span>
-                                                        <span>{country.dialCode}</span>
-                                                    </SelectItem>
-                                                ))}
+                                                {countriesList.map(
+                                                    (country) => (
+                                                        <SelectItem
+                                                            key={country.code}
+                                                            value={country.code}
+                                                        >
+                                                            <span>
+                                                                {country.flag}
+                                                            </span>
+                                                            <span>
+                                                                {
+                                                                    country.dialCode
+                                                                }
+                                                            </span>
+                                                        </SelectItem>
+                                                    ),
+                                                )}
                                             </SelectContent>
                                         </Select>
                                         <div className="h-6 w-px shrink-0 bg-border" />
@@ -113,13 +121,16 @@ export default function CreateBusinessModal({ children }: PropsWithChildren) {
                                             name="phone"
                                             placeholder={
                                                 countriesList.find(
-                                                    (c) => c.code === phoneCountry,
+                                                    (c) =>
+                                                        c.code === phoneCountry,
                                                 )?.placeholder || 'Phone number'
                                             }
                                         />
                                     </InputGroup>
                                     <InputError message={errors.phone} />
-                                    <InputError message={errors.phone_country} />
+                                    <InputError
+                                        message={errors.phone_country}
+                                    />
                                 </div>
                             </div>
 
@@ -143,4 +154,3 @@ export default function CreateBusinessModal({ children }: PropsWithChildren) {
         </Dialog>
     );
 }
-
