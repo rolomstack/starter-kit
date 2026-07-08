@@ -4,7 +4,6 @@ use App\Enums\BusinessRole;
 use App\Models\Business;
 use App\Models\User;
 use App\Notifications\VerifyPhoneNotification;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 
 test('business phone verification screen can be rendered', function () {
@@ -46,14 +45,11 @@ test('business phone can be verified with correct token', function () {
     $user->switchBusiness($business);
 
     $token = '123456';
-    DB::table('phone_verification_tokens')->insert([
-        'tokenable_type' => $business->getMorphClass(),
-        'tokenable_id' => $business->getKey(),
-        'phone' => $business->phone,
-        'token' => $token,
+    $business->codes()->create([
+        'purpose' => 'phone_verification',
+        'recipient' => $business->phone,
+        'code' => $token,
         'expires_at' => now()->addMinutes(15),
-        'created_at' => now(),
-        'updated_at' => now(),
     ]);
 
     $response = $this->actingAs($user)->post(route('businesses.phone.verify', ['current_business' => $business->slug]), [
@@ -74,14 +70,11 @@ test('business phone verification fails with incorrect token', function () {
     $user->switchBusiness($business);
 
     $token = '123456';
-    DB::table('phone_verification_tokens')->insert([
-        'tokenable_type' => $business->getMorphClass(),
-        'tokenable_id' => $business->getKey(),
-        'phone' => $business->phone,
-        'token' => $token,
+    $business->codes()->create([
+        'purpose' => 'phone_verification',
+        'recipient' => $business->phone,
+        'code' => $token,
         'expires_at' => now()->addMinutes(15),
-        'created_at' => now(),
-        'updated_at' => now(),
     ]);
 
     $response = $this->actingAs($user)->post(route('businesses.phone.verify', ['current_business' => $business->slug]), [

@@ -7,7 +7,6 @@ use App\Models\Business;
 use Closure;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -47,10 +46,9 @@ class BusinessPhoneVerificationController extends Controller
                 'string',
                 'size:6',
                 function (string $attribute, mixed $value, Closure $fail) use ($current_business) {
-                    $exists = DB::table('phone_verification_tokens')
-                        ->where('tokenable_type', $current_business->getMorphClass())
-                        ->where('tokenable_id', $current_business->getKey())
-                        ->where('token', $value)
+                    $exists = $current_business->codes()
+                        ->phoneVerification()
+                        ->where('code', $value)
                         ->where('expires_at', '>=', now())
                         ->exists();
 
@@ -61,9 +59,8 @@ class BusinessPhoneVerificationController extends Controller
             ],
         ]);
 
-        DB::table('phone_verification_tokens')
-            ->where('tokenable_type', $current_business->getMorphClass())
-            ->where('tokenable_id', $current_business->getKey())
+        $current_business->codes()
+            ->phoneVerification()
             ->delete();
 
         $current_business->markPhoneAsVerified();

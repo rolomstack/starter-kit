@@ -11,11 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('phone_verification_tokens', function (Blueprint $table) {
+        Schema::create('codes', function (Blueprint $table) {
             $table->id();
             $table->morphs('tokenable');
-            $table->string('phone');
-            $table->string('token');
+            $table->string('purpose');
+            $table->string('recipient');
+            $table->string('code');
             $table->timestamp('expires_at');
             $table->timestamps();
         });
@@ -26,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('phone_verification_tokens');
+        Schema::dropIfExists('codes');
     }
 };

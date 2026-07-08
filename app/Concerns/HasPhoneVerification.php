@@ -2,12 +2,22 @@
 
 namespace App\Concerns;
 
+use App\Models\Code;
 use App\Notifications\VerifyPhoneNotification;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Notification;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 trait HasPhoneVerification
 {
+    /**
+     * Get the model's verification/OTP codes.
+     *
+     * @return MorphMany<Code, $this>
+     */
+    public function codes(): MorphMany
+    {
+        return $this->morphMany(Code::class, 'tokenable');
+    }
+
     /**
      * Determine if the model has verified their phone number.
      */
@@ -33,17 +43,12 @@ trait HasPhoneVerification
     {
         $token = (string) random_int(100000, 999999);
 
-        DB::table('phone_verification_tokens')->updateOrInsert(
+        $this->codes()->updateOrCreate(
+            ['purpose' => Code::PURPOSE_PHONE_VERIFICATION],
             [
-                'tokenable_type' => $this->getMorphClass(),
-                'tokenable_id' => $this->getKey(),
-            ],
-            [
-                'phone' => $this->getPhoneForVerification(),
-                'token' => $token,
+                'recipient' => $this->getPhoneForVerification(),
+                'code' => $token,
                 'expires_at' => now()->addMinutes(15),
-                'created_at' => now(),
-                'updated_at' => now(),
             ]
         );
 
