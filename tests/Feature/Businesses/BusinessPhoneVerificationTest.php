@@ -108,3 +108,56 @@ test('business phone verification code can be resent', function () {
         VerifyPhoneNotification::class
     );
 });
+
+test('business creation redirects to phone verification notice if phone is not verified before', function () {
+    $user = User::factory()->create();
+
+    Notification::fake();
+
+    $response = $this->actingAs($user)->post(route('businesses.store'), [
+        'name' => 'New Unverified Phone Business',
+        'email' => 'new@example.com',
+        'phone_country' => 'US',
+        'phone' => '2015550123',
+    ]);
+
+    $business = Business::where('name', 'New Unverified Phone Business')->first();
+    expect($business)->not->toBeNull();
+    expect($business->hasVerifiedPhone())->toBeFalse();
+
+    $response->assertRedirect(route('businesses.phone.notice', ['current_business' => $business->slug]));
+
+    Notification::assertSentTo(
+        $business,
+        VerifyPhoneNotification::class
+    );
+});
+
+test('business creation auto verifies and redirects normally if phone has been verified by user before', function () {
+    $user = User::factory()->create();
+    $personalBusiness = $user->personalBusiness();
+    $personalBusiness->forceFill([
+        'phone' => '2015550123',
+        'phone_verified_at' => now(),
+    ])->save();
+
+    Notification::fake();
+
+    $response = $this->actingAs($user)->post(route('businesses.store'), [
+        'name' => 'New Auto Verified Business',
+        'email' => 'new@example.com',
+        'phone_country' => 'US',
+        'phone' => '2015550123',
+    ]);
+
+    $business = Business::where('name', 'New Auto Verified Business')->first();
+    expect($business)->not->toBeNull();
+    expect($business->hasVerifiedPhone())->toBeTrue();
+
+    $response->assertRedirect(route('businesses.edit', ['business' => $business->slug]));
+
+    Notification::assertNotSentTo(
+        $business,
+        VerifyPhoneNotification::class
+    );
+});

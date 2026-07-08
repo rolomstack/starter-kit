@@ -125,5 +125,5 @@ test('users can complete setup business onboarding', function () {
     expect($business->is_personal)->toBeTrue();
     expect($business->phone)->toBe('555-555-5555');
 
-    $response->assertRedirect(route('dashboard', ['current_business' => $business->slug]));
+    $response->assertRedirect(route('businesses.phone.notice', ['current_business' => $business->slug]));
 });

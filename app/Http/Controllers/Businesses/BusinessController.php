@@ -73,15 +73,44 @@ class BusinessController extends Controller
 
         $validated = $request->validate($rules);
 
-        $business = $createBusiness->handle(
-            $user,
-            $validated['name'],
-            $validated['email'] ?? $user->email,
-            phone: $validated['phone'] ?? null,
-            isPersonal: $isFirstBusiness
-        );
+        $hasUsedPhoneBefore = false;
+
+        $business = DB::transaction(function () use ($createBusiness, $user, $validated, $isFirstBusiness, &$hasUsedPhoneBefore) {
+            $business = $createBusiness->handle(
+                $user,
+                $validated['name'],
+                $validated['email'] ?? $user->email,
+                phone: $validated['phone'] ?? null,
+                isPersonal: $isFirstBusiness
+            );
+
+            $phone = $validated['phone'] ?? null;
+
+            if ($phone) {
+                $hasUsedPhoneBefore = $user->businesses()
+                    ->where('phone', $phone)
+                    ->whereNotNull('phone_verified_at')
+                    ->exists();
+
+                if ($hasUsedPhoneBefore) {
+                    $business->markPhoneAsVerified();
+                }
+            }
+
+            return $business;
+        });
+
+        $phone = $validated['phone'] ?? null;
+
+        if ($phone && ! $hasUsedPhoneBefore) {
+            $business->sendPhoneVerificationNotification();
+        }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Business created.')]);
+
+        if ($phone && ! $hasUsedPhoneBefore) {
+            return to_route('businesses.phone.notice', ['current_business' => $business->slug]);
+        }
 
         if ($isFirstBusiness) {
             return to_route('dashboard', ['current_business' => $business->slug]);
