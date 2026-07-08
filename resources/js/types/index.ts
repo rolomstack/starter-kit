@@ -6,6 +6,14 @@ export type * from './navigation';
 export type * from './businesses';
 export type * from './ui';
 
+export type CountryData = {
+    code: string;
+    name: string;
+    flag: string;
+    dialCode: string;
+    placeholder: string;
+};
+
 export type PageProps<
     T extends Record<string, unknown> = Record<string, unknown>,
 > = T & {
@@ -14,4 +22,6 @@ export type PageProps<
     sidebarOpen: boolean;
     currentBusiness: Business | null;
     businesses: Business[];
+    countries?: CountryData[];
 };
+

@@ -32,6 +32,53 @@ test('businesses can be created', function () {
     ]);
 });
 
+test('businesses can be created with custom email and phone', function () {
+    $user = User::factory()->create();
+
+    $response = $this
+        ->actingAs($user)
+        ->post(route('businesses.store'), [
+            'name' => 'Test Business Custom',
+            'email' => 'custom-business@example.com',
+            'phone_country' => 'US',
+            'phone' => '2015550123',
+        ]);
+
+    $response->assertRedirect();
+
+    $this->assertDatabaseHas('businesses', [
+        'name' => 'Test Business Custom',
+        'email' => 'custom-business@example.com',
+        'phone' => '2015550123',
+        'is_personal' => false,
+    ]);
+});
+
+test('business creation fails with invalid phone or email', function () {
+    $user = User::factory()->create();
+
+    // Invalid email
+    $response = $this
+        ->actingAs($user)
+        ->post(route('businesses.store'), [
+            'name' => 'Invalid Email Business',
+            'email' => 'not-an-email',
+        ]);
+
+    $response->assertSessionHasErrors(['email']);
+
+    // Invalid phone number format for US
+    $response = $this
+        ->actingAs($user)
+        ->post(route('businesses.store'), [
+            'name' => 'Invalid Phone Business',
+            'phone_country' => 'US',
+            'phone' => '12345',
+        ]);
+
+    $response->assertSessionHasErrors(['phone']);
+});
+
 test('business slug uses next available suffix', function () {
     $user = User::factory()->create();
 

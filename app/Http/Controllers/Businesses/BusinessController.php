@@ -61,6 +61,9 @@ class BusinessController extends Controller
 
         $rules = [
             'name' => ['required', 'string', 'max:255', new BusinessName],
+            'email' => ['nullable', 'string', 'email', 'max:255'],
+            'phone_country' => ['nullable', new Enum(Country::class)],
+            'phone' => ['nullable', 'string', new Phone('phone_country')],
         ];
 
         if ($isFirstBusiness) {
@@ -73,8 +76,8 @@ class BusinessController extends Controller
         $business = $createBusiness->handle(
             $user,
             $validated['name'],
-            $user->email,
-            phone: $isFirstBusiness ? $validated['phone'] : null,
+            $validated['email'] ?? $user->email,
+            phone: $validated['phone'] ?? null,
             isPersonal: $isFirstBusiness
         );
 

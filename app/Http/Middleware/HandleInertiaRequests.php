@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\Country;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -46,6 +47,13 @@ class HandleInertiaRequests extends Middleware
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'currentBusiness' => fn () => $user?->currentBusiness ? $user->toUserBusiness($user->currentBusiness) : null,
             'businesses' => fn () => $user?->toUserBusinesses(includeCurrent: true) ?? [],
+            'countries' => collect(Country::cases())->map(fn (Country $country) => [
+                'code' => $country->value,
+                'name' => $country->label(),
+                'flag' => $country->flag(),
+                'dialCode' => $country->dialCode(),
+                'placeholder' => $country->placeholder(),
+            ])->toArray(),
         ];
     }
 }

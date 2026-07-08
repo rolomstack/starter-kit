@@ -1,4 +1,4 @@
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -14,24 +14,19 @@ import {
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { store } from '@/routes/businesses';
-
-type CountryData = {
-    code: string;
-    name: string;
-    flag: string;
-    dialCode: string;
-    placeholder: string;
-};
+import type { CountryData, PageProps } from '@/types';
 
 type Props = {
     countries?: CountryData[];
 };
 
 export default function BusinessesCreate({ countries = [] }: Props) {
+    const { props } = usePage<PageProps>();
+    const userEmail = props.auth.user?.email || '';
+    const countriesList = countries.length > 0 ? countries : (props.countries ?? []);
     const [phoneCountry, setPhoneCountry] = useState<string>(
-        countries[0]?.code || 'US',
+        countriesList[0]?.code || 'US',
     );
-    const countriesList = countries;
 
     return (
         <>
@@ -55,6 +50,19 @@ export default function BusinessesCreate({ countries = [] }: Props) {
                                 placeholder="Business Name"
                             />
                             <InputError message={errors.name} />
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="email">Email Address</Label>
+                            <Input
+                                id="email"
+                                type="email"
+                                name="email"
+                                defaultValue={userEmail}
+                                placeholder="Email Address"
+                                tabIndex={2}
+                            />
+                            <InputError message={errors.email} />
                         </div>
 
                         <div className="grid gap-2">
@@ -87,7 +95,7 @@ export default function BusinessesCreate({ countries = [] }: Props) {
                                     id="phone"
                                     type="text"
                                     required
-                                    tabIndex={2}
+                                    tabIndex={3}
                                     autoComplete="phone"
                                     name="phone"
                                     placeholder={
@@ -104,7 +112,7 @@ export default function BusinessesCreate({ countries = [] }: Props) {
                         <Button
                             type="submit"
                             className="mt-2 w-full"
-                            tabIndex={3}
+                            tabIndex={4}
                             disabled={processing}
                             data-test="setup-business-button"
                         >
