@@ -30,7 +30,8 @@ class CreateNewUser implements CreatesNewUsers
         Validator::make($input, [
             ...$this->profileRules(),
             'business_name' => ['required', 'string', 'max:50', 'min:3'],
-            'phone' => ['required', 'string', new Phone],
+            'phone_country' => ['required', 'string', 'in:US,CA,GB,AU,NZ,NG'],
+            'phone' => ['required', 'string', new Phone('phone_country')],
             'password' => $this->passwordRules(),
         ])->validate();
 

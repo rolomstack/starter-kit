@@ -38,6 +38,7 @@ test('new users can register', function () {
         'name' => 'Test User',
         'email' => 'test@example.com',
         'business_name' => 'Acme Corp',
+        'phone_country' => 'US',
         'phone' => '555-555-5555',
         'password' => 'password',
         'password_confirmation' => 'password',
@@ -47,4 +48,34 @@ test('new users can register', function () {
 
     $user = User::where('email', 'test@example.com')->first();
     $response->assertRedirect(route('dashboard'));
+});
+
+test('registration fails with invalid phone country code', function () {
+    $response = $this->post(route('register.store'), [
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'business_name' => 'Acme Corp',
+        'phone_country' => 'XX', // Invalid country
+        'phone' => '555-555-5555',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ]);
+
+    $response->assertSessionHasErrors(['phone_country']);
+    $this->assertGuest();
+});
+
+test('registration fails with incorrect phone number format for selected country', function () {
+    $response = $this->post(route('register.store'), [
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'business_name' => 'Acme Corp',
+        'phone_country' => 'US',
+        'phone' => '07123456789', // Invalid for US
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ]);
+
+    $response->assertSessionHasErrors(['phone']);
+    $this->assertGuest();
 });

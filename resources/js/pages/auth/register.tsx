@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Form, Head } from '@inertiajs/react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
@@ -5,11 +6,64 @@ import TeamInvitationAlert from '@/components/team-invitation-alert';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { InputGroup, InputGroupInput } from '@/components/ui/input-group';
 import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
 import type { TeamInvitationContext } from '@/types';
+
+const COUNTRIES = [
+    {
+        code: 'US',
+        name: 'United States',
+        flag: '🇺🇸',
+        dialCode: '+1',
+        placeholder: '201 555 0123',
+    },
+    {
+        code: 'CA',
+        name: 'Canada',
+        flag: '🇨🇦',
+        dialCode: '+1',
+        placeholder: '201 555 0123',
+    },
+    {
+        code: 'GB',
+        name: 'United Kingdom',
+        flag: '🇬🇧',
+        dialCode: '+44',
+        placeholder: '7123 456789',
+    },
+    {
+        code: 'AU',
+        name: 'Australia',
+        flag: '🇦🇺',
+        dialCode: '+61',
+        placeholder: '412 345 678',
+    },
+    {
+        code: 'NZ',
+        name: 'New Zealand',
+        flag: '🇳🇿',
+        dialCode: '+64',
+        placeholder: '21 234 5678',
+    },
+    {
+        code: 'NG',
+        name: 'Nigeria',
+        flag: '🇳🇬',
+        dialCode: '+234',
+        placeholder: '803 123 4567',
+    },
+] as const;
 
 type Props = {
     passwordRules: string;
@@ -17,6 +71,7 @@ type Props = {
 };
 
 export default function Register({ passwordRules, teamInvitation }: Props) {
+    const [phoneCountry, setPhoneCountry] = useState<string>('US');
     return (
         <>
             <Head title="Register" />
@@ -88,17 +143,49 @@ export default function Register({ passwordRules, teamInvitation }: Props) {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="phone">Phone Number (whatsapp preferred)</Label>
-                                <Input
-                                    id="phone"
-                                    type="phone"
-                                    required
-                                    tabIndex={2}
-                                    autoComplete="phone"
-                                    name="phone"
-                                    placeholder="+2348145444080"
-                                />
+                                <Label htmlFor="phone">
+                                    Phone Number (whatsapp preferred)
+                                </Label>
+                                <InputGroup>
+                                    <Select
+                                        name="phone_country"
+                                        value={phoneCountry}
+                                        onValueChange={setPhoneCountry}
+                                    >
+                                        <SelectTrigger className="h-10 w-[95px] rounded-r-none border-0 bg-transparent shadow-none focus-visible:border-0 focus-visible:ring-0">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {COUNTRIES.map((country) => (
+                                                <SelectItem
+                                                    key={country.code}
+                                                    value={country.code}
+                                                >
+                                                    <span>{country.flag}</span>
+                                                    <span>
+                                                        {country.dialCode}
+                                                    </span>
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <div className="h-6 w-px shrink-0 bg-border" />
+                                    <InputGroupInput
+                                        id="phone"
+                                        type="text"
+                                        required
+                                        tabIndex={2}
+                                        autoComplete="phone"
+                                        name="phone"
+                                        placeholder={
+                                            COUNTRIES.find(
+                                                (c) => c.code === phoneCountry,
+                                            )?.placeholder || 'Phone number'
+                                        }
+                                    />
+                                </InputGroup>
                                 <InputError message={errors.phone} />
+                                <InputError message={errors.phone_country} />
                             </div>
 
                             <div className="grid gap-2">
