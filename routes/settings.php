@@ -30,6 +30,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('settings/appearance', 'settings/appearance')->name('appearance.edit');
 
     Route::get('settings/teams', [TeamController::class, 'index'])->name('teams.index');
+    Route::get('settings/teams/create', [TeamController::class, 'create'])->name('teams.create');
     Route::post('settings/teams', [TeamController::class, 'store'])->name('teams.store');
 
     Route::middleware(EnsureTeamMembership::class)->group(function () {

@@ -10,7 +10,15 @@ trait RedirectsToCurrentTeam
 {
     protected function redirectPathForCurrentTeam(Request $request, string $redirect): string
     {
-        $team = $this->currentTeam($request);
+        $user = $request->user();
+        if (! $user) {
+            abort(403);
+        }
+
+        $team = $user->currentTeam ?? $user->personalTeam();
+        if (! $team) {
+            return route('teams.create');
+        }
 
         URL::defaults(['current_team' => $team->slug]);
 

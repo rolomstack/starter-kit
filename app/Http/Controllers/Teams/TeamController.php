@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Teams;
 
 use App\Actions\Teams\CreateTeam;
+use App\Enums\Country;
 use App\Enums\TeamRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Teams\DeleteTeamRequest;
@@ -10,10 +11,13 @@ use App\Http\Requests\Teams\SaveTeamRequest;
 use App\Models\Membership;
 use App\Models\Team;
 use App\Models\User;
+use App\Rules\Phone;
+use App\Rules\TeamName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rules\Enum;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -32,13 +36,53 @@ class TeamController extends Controller
     }
 
     /**
+     * Show the page to create a new team.
+     */
+    public function create(Request $request): Response
+    {
+        return Inertia::render('teams/create', [
+            'countries' => collect(Country::cases())->map(fn (Country $country) => [
+                'code' => $country->value,
+                'name' => $country->label(),
+                'flag' => $country->flag(),
+                'dialCode' => $country->dialCode(),
+                'placeholder' => $country->placeholder(),
+            ])->toArray(),
+        ]);
+    }
+
+    /**
      * Store a newly created team.
      */
-    public function store(SaveTeamRequest $request, CreateTeam $createTeam): RedirectResponse
+    public function store(Request $request, CreateTeam $createTeam): RedirectResponse
     {
-        $team = $createTeam->handle($request->user(), $request->validated('name'));
+        $user = $request->user();
+        $isFirstTeam = ! $user->personalTeam() && ! $user->teams()->exists();
+
+        $rules = [
+            'name' => ['required', 'string', 'max:255', new TeamName],
+        ];
+
+        if ($isFirstTeam) {
+            $rules['phone_country'] = ['required', new Enum(Country::class)];
+            $rules['phone'] = ['required', 'string', new Phone('phone_country')];
+        }
+
+        $validated = $request->validate($rules);
+
+        $metadata = [];
+        if ($isFirstTeam) {
+            $metadata['phone'] = $validated['phone'];
+            $metadata['email'] = $user->email;
+        }
+
+        $team = $createTeam->handle($user, $validated['name'], isPersonal: $isFirstTeam, metadata: $metadata);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Team created.')]);
+
+        if ($isFirstTeam) {
+            return to_route('dashboard', ['current_team' => $team->slug]);
+        }
 
         return to_route('teams.edit', ['team' => $team->slug]);
     }

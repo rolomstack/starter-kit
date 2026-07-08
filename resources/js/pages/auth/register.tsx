@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Form, Head } from '@inertiajs/react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
@@ -6,48 +5,26 @@ import TeamInvitationAlert from '@/components/team-invitation-alert';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { InputGroup, InputGroupInput } from '@/components/ui/input-group';
 import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
 import type { TeamInvitationContext } from '@/types';
 
-type CountryData = {
-    code: string;
-    name: string;
-    flag: string;
-    dialCode: string;
-    placeholder: string;
-};
-
 type Props = {
     passwordRules: string;
     teamInvitation?: TeamInvitationContext | null;
-    countries?: CountryData[];
 };
 
 export default function Register({
     passwordRules,
     teamInvitation,
-    countries = [],
 }: Props) {
-    const [phoneCountry, setPhoneCountry] = useState<string>(
-        countries[0]?.code || 'US',
-    );
-    const countriesList = countries;
     return (
         <>
             <Head title="Register" />
             <Form
-                {...store.form()}
+                {...store.form(teamInvitation ? { query: { invitation: teamInvitation.code } } : undefined)}
                 resetOnSuccess={['password', 'password_confirmation']}
                 disableWhileProcessing
                 className="flex flex-col gap-6"
@@ -81,25 +58,6 @@ export default function Register({
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="business_name">
-                                    Business Name
-                                </Label>
-                                <Input
-                                    id="business_name"
-                                    type="text"
-                                    required
-                                    autoFocus
-                                    tabIndex={1}
-                                    name="business_name"
-                                    placeholder="Business Name"
-                                />
-                                <InputError
-                                    message={errors.business_name}
-                                    className="mt-2"
-                                />
-                            </div>
-
-                            <div className="grid gap-2">
                                 <Label htmlFor="email">Email address</Label>
                                 <Input
                                     id="email"
@@ -111,52 +69,6 @@ export default function Register({
                                     placeholder="email@example.com"
                                 />
                                 <InputError message={errors.email} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="phone">
-                                    Phone Number (whatsapp preferred)
-                                </Label>
-                                <InputGroup>
-                                    <Select
-                                        name="phone_country"
-                                        value={phoneCountry}
-                                        onValueChange={setPhoneCountry}
-                                    >
-                                        <SelectTrigger className="h-10 w-[95px] rounded-r-none border-0 bg-transparent shadow-none focus-visible:border-0 focus-visible:ring-0">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {countriesList.map((country) => (
-                                                <SelectItem
-                                                    key={country.code}
-                                                    value={country.code}
-                                                >
-                                                    <span>{country.flag}</span>
-                                                    <span>
-                                                        {country.dialCode}
-                                                    </span>
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <div className="h-6 w-px shrink-0 bg-border" />
-                                    <InputGroupInput
-                                        id="phone"
-                                        type="text"
-                                        required
-                                        tabIndex={2}
-                                        autoComplete="phone"
-                                        name="phone"
-                                        placeholder={
-                                            countriesList.find(
-                                                (c) => c.code === phoneCountry,
-                                            )?.placeholder || 'Phone number'
-                                        }
-                                    />
-                                </InputGroup>
-                                <InputError message={errors.phone} />
-                                <InputError message={errors.phone_country} />
                             </div>
 
                             <div className="grid gap-2">

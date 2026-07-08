@@ -20,7 +20,17 @@ class EnsureTeamMembership
     {
         [$user, $team] = [$request->user(), $this->team($request)];
 
-        abort_if(! $user || ! $team || ! $user->belongsToTeam($team), 403);
+        if (! $user) {
+            abort(403);
+        }
+
+        if (! $team || ! $user->belongsToTeam($team)) {
+            if (! $user->personalTeam() && ! $user->teams()->exists()) {
+                return redirect()->route('teams.create');
+            }
+
+            abort(403);
+        }
 
         $this->ensureTeamMemberHasRequiredRole($user, $team, $minimumRole);
 

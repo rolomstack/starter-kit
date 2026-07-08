@@ -2,53 +2,60 @@
 
 namespace App\Actions\Fortify;
 
-use App\Actions\Teams\CreateTeam;
+use App\Actions\Teams\AcceptTeamInvitation;
 use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
-use App\Enums\Country;
+use App\Models\TeamInvitation;
 use App\Models\User;
-use App\Rules\Phone;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rules\Enum;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
 
 class CreateNewUser implements CreatesNewUsers
 {
     use PasswordValidationRules, ProfileValidationRules;
 
-    public function __construct(private CreateTeam $createTeam)
-    {
+    public function __construct(
+        private readonly AcceptTeamInvitation $acceptTeamInvitation,
+    ) {
         //
     }
 
     /**
      * Validate and create a newly registered user.
      *
-     * @param  array<string, string>  $input
+     * @param array<string, string> $input
      */
     public function create(array $input): User
     {
         Validator::make($input, [
             ...$this->profileRules(),
-            'business_name' => ['required', 'string', 'max:50', 'min:3'],
-            'phone_country' => ['required', new Enum(Country::class)],
-            'phone' => ['required', 'string', new Phone('phone_country')],
             'password' => $this->passwordRules(),
         ])->validate();
 
-        return DB::transaction(function () use ($input) {
+        $invitationCode = request()->query('invitation');
+        $invitation = null;
+        if (is_string($invitationCode)) {
+            $invitation = TeamInvitation::query()
+                ->with('team')
+                ->where('code', $invitationCode)
+                ->whereNull('accepted_at')
+                ->where(fn ($query) => $query
+                    ->whereNull('expires_at')
+                    ->orWhere('expires_at', '>=', now()))
+                ->first();
+        }
+
+        return DB::transaction(function () use ($input, $invitation) {
             $user = User::create([
                 'name' => $input['name'],
                 'email' => $input['email'],
                 'password' => $input['password'],
             ]);
 
-            $businessName = $input['business_name'];
-            $this->createTeam->handle($user, $businessName, isPersonal: true, metadata: [
-                'email' => $input['business_email'] ?? $input['email'],
-                'phone' => $input['phone'],
-            ]);
+            if ($invitation) {
+                $this->acceptTeamInvitation->handle($user, $invitation);
+            }
 
             return $user;
         });
