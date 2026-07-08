@@ -12,13 +12,14 @@ class CreateBusiness
     /**
      * Create a new business and add the user as owner.
      */
-    public function handle(User $user, string $name, bool $isPersonal = false, array $metadata = []): Business
+    public function handle(User $user, string $name, string $email, ?string $phone = null, bool $isPersonal = false): Business
     {
-        return DB::transaction(function () use ($metadata, $user, $name, $isPersonal) {
+        return DB::transaction(function () use ($email, $phone, $user, $name, $isPersonal) {
             $business = Business::create([
                 'name' => $name,
+                'email' => $email,
+                'phone' => $phone,
                 'is_personal' => $isPersonal,
-                ...$metadata,
             ]);
 
             $membership = $business->memberships()->create([

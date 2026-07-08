@@ -70,13 +70,13 @@ class BusinessController extends Controller
 
         $validated = $request->validate($rules);
 
-        $metadata = [];
-        if ($isFirstBusiness) {
-            $metadata['phone'] = $validated['phone'];
-            $metadata['email'] = $user->email;
-        }
-
-        $business = $createBusiness->handle($user, $validated['name'], isPersonal: $isFirstBusiness, metadata: $metadata);
+        $business = $createBusiness->handle(
+            $user,
+            $validated['name'],
+            $user->email,
+            phone: $isFirstBusiness ? $validated['phone'] : null,
+            isPersonal: $isFirstBusiness
+        );
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Business created.')]);
 
