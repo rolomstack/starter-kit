@@ -89,6 +89,7 @@ class FortifyServiceProvider extends ServiceProvider
                 'name' => $country->label(),
                 'flag' => $country->flag(),
                 'dialCode' => $country->dialCode(),
+                'placeholder' => $country->placeholder(),
             ])->toArray(),
         ]));
 

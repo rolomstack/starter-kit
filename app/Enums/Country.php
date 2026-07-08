@@ -69,4 +69,18 @@ enum Country: string
             self::NG => '/^(?:\+?234|0)?[789]\d{9}$/',
         };
     }
+
+    /**
+     * Get the placeholder format for the country.
+     */
+    public function placeholder(): string
+    {
+        return match ($this) {
+            self::US, self::CA => '201 555 0123',
+            self::GB => '7123 456789',
+            self::AU => '412 345 678',
+            self::NZ => '21 234 5678',
+            self::NG => '803 123 4567',
+        };
+    }
 }

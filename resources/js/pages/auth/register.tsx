@@ -25,24 +25,7 @@ type CountryData = {
     name: string;
     flag: string;
     dialCode: string;
-};
-
-const DEFAULT_COUNTRIES: CountryData[] = [
-    { code: 'US', name: 'United States', flag: '🇺🇸', dialCode: '+1' },
-    { code: 'CA', name: 'Canada', flag: '🇨🇦', dialCode: '+1' },
-    { code: 'GB', name: 'United Kingdom', flag: '🇬🇧', dialCode: '+44' },
-    { code: 'AU', name: 'Australia', flag: '🇦🇺', dialCode: '+61' },
-    { code: 'NZ', name: 'New Zealand', flag: '🇳🇿', dialCode: '+64' },
-    { code: 'NG', name: 'Nigeria', flag: '🇳🇬', dialCode: '+234' },
-];
-
-const PLACEHOLDERS: Record<string, string> = {
-    US: '201 555 0123',
-    CA: '201 555 0123',
-    GB: '7123 456789',
-    AU: '412 345 678',
-    NZ: '21 234 5678',
-    NG: '803 123 4567',
+    placeholder: string;
 };
 
 type Props = {
@@ -56,8 +39,10 @@ export default function Register({
     teamInvitation,
     countries = [],
 }: Props) {
-    const [phoneCountry, setPhoneCountry] = useState<string>('US');
-    const countriesList = countries.length > 0 ? countries : DEFAULT_COUNTRIES;
+    const [phoneCountry, setPhoneCountry] = useState<string>(
+        countries[0]?.code || 'US',
+    );
+    const countriesList = countries;
     return (
         <>
             <Head title="Register" />
@@ -164,8 +149,9 @@ export default function Register({
                                         autoComplete="phone"
                                         name="phone"
                                         placeholder={
-                                            PLACEHOLDERS[phoneCountry] ||
-                                            'Phone number'
+                                            countriesList.find(
+                                                (c) => c.code === phoneCountry,
+                                            )?.placeholder || 'Phone number'
                                         }
                                     />
                                 </InputGroup>
