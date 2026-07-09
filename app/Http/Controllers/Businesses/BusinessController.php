@@ -8,16 +8,14 @@ use App\Enums\Country;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Businesses\DeleteBusinessRequest;
 use App\Http\Requests\Businesses\SaveBusinessRequest;
+use App\Http\Requests\Businesses\StoreBusinessRequest;
 use App\Models\Business;
 use App\Models\Membership;
 use App\Models\User;
-use App\Rules\BusinessName;
-use App\Rules\Phone;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Validation\Rules\Enum;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -54,34 +52,23 @@ class BusinessController extends Controller
     /**
      * Store a newly created business.
      */
-    public function store(Request $request, CreateBusiness $createBusiness): RedirectResponse
+    public function store(StoreBusinessRequest $request, CreateBusiness $createBusiness): RedirectResponse
     {
+        $validated = $request->validated();
         $user = $request->user();
-        $isFirstBusiness = ! $user->personalBusiness() && ! $user->businesses()->exists();
 
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255', new BusinessName],
-            'email' => ['nullable', 'string', 'email', 'max:255'],
-            'phone_country' => ['nullable', new Enum(Country::class)],
-            'phone' => ['nullable', 'string', new Phone('phone_country')],
-        ]);
-
-        $hasUsedPhoneBefore = false;
-        $phone = $validated['phone'] ?? null;
-
-        $business = DB::transaction(function () use ($phone, $createBusiness, $user, $validated, $isFirstBusiness, &$hasUsedPhoneBefore) {
+        $business = DB::transaction(function () use ($createBusiness, $user, $validated, &$hasUsedPhoneBefore) {
             $business = $createBusiness->handle(
                 $user,
                 $validated['name'],
                 $validated['email'] ?? $user->email,
                 phone: $validated['phone'] ?? null,
-                phoneCountry: isset($validated['phone_country']) ? Country::tryFrom($validated['phone_country']) : null,
-                isPersonal: $isFirstBusiness
+                phoneCountry: isset($validated['phone_country']) ? Country::tryFrom($validated['phone_country']) : null
             );
 
-            if ($phone) {
+            if ($business->phone) {
                 $hasUsedPhoneBefore = $user->businesses()
-                    ->where('phone', $phone)
+                    ->where('phone', $business->phone)
                     ->whereNotNull('phone_verified_at')
                     ->exists();
 
@@ -93,17 +80,15 @@ class BusinessController extends Controller
             return $business;
         });
 
-        if ($phone && ! $hasUsedPhoneBefore) {
+        if ($business->phone && ! $business->hasVerifiedPhone()) {
             $business->sendPhoneVerificationNotification();
-        }
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Business created.')]);
+            Inertia::flash('toast', ['type' => 'success', 'message' => __('Business created.')]);
 
-        if ($phone && ! $hasUsedPhoneBefore) {
             return to_route('businesses.phone.notice', ['current_business' => $business->slug]);
         }
 
-        if ($isFirstBusiness) {
+        if ($user->businesses()->count() === 1) {
             return to_route('dashboard', ['current_business' => $business->slug]);
         }
 
@@ -117,7 +102,7 @@ class BusinessController extends Controller
     {
         $user = $request->user();
 
-        $detectedCountry = $business->phone_country?->value;
+        $country = $business->phone_country?->value;
 
         return Inertia::render('businesses/edit', [
             'business' => [
@@ -126,7 +111,7 @@ class BusinessController extends Controller
                 'slug' => $business->slug,
                 'email' => $business->email,
                 'phone' => $business->phone,
-                'phoneCountry' => $detectedCountry,
+                'phoneCountry' => $country,
                 'isPersonal' => $business->is_personal,
             ],
             'countries' => collect(Country::cases())->map(fn (Country $country) => [

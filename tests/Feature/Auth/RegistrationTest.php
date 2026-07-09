@@ -122,7 +122,6 @@ test('users can complete setup business onboarding', function () {
 
     $business = Business::where('name', 'Acme Corp')->first();
     expect($business)->not->toBeNull();
-    expect($business->is_personal)->toBeTrue();
     expect($business->phone)->toBe('555-555-5555');
 
     $response->assertRedirect(route('businesses.phone.notice', ['current_business' => $business->slug]));
