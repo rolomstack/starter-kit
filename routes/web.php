@@ -26,6 +26,7 @@ Route::prefix('{current_business}')
         Route::get('phone/verify', [BusinessPhoneVerificationController::class, 'show'])->name('businesses.phone.notice');
         Route::post('phone/verify', [BusinessPhoneVerificationController::class, 'verify'])->name('businesses.phone.verify');
         Route::post('phone/verify/resend', [BusinessPhoneVerificationController::class, 'resend'])->name('businesses.phone.resend');
+        Route::patch('phone/verify/update', [BusinessPhoneVerificationController::class, 'updatePhone'])->name('businesses.phone.update');
     });
 
 require __DIR__.'/settings.php';
