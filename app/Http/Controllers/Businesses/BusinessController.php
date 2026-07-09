@@ -59,9 +59,9 @@ class BusinessController extends Controller
         $user = $request->user();
         $isFirstBusiness = ! $user->personalBusiness() && ! $user->businesses()->exists();
 
-        $validated = $request->validate( [
+        $validated = $request->validate([
             'name' => ['required', 'string', 'max:255', new BusinessName],
-            'email' => ['required', 'string', 'email', 'max:255'],
+            'email' => ['nullable', 'string', 'email', 'max:255'],
             'phone_country' => ['nullable', new Enum(Country::class)],
             'phone' => ['nullable', 'string', new Phone('phone_country')],
         ]);
