@@ -126,13 +126,39 @@ class BusinessController extends Controller
     {
         $user = $request->user();
 
+        $phone = $business->phone;
+        $detectedCountry = null;
+        if ($phone) {
+            $cleanPhone = preg_replace('/[\s\-().]/', '', $phone);
+            $cases = Country::cases();
+            usort($cases, fn ($a, $b) => strlen($b->dialCode()) <=> strlen($a->dialCode()));
+            foreach ($cases as $country) {
+                $dialCode = $country->dialCode();
+                $dialCodeClean = ltrim($dialCode, '+');
+                if (str_starts_with($cleanPhone, $dialCode) || str_starts_with($cleanPhone, $dialCodeClean)) {
+                    $detectedCountry = $country->value;
+                    break;
+                }
+            }
+        }
+
         return Inertia::render('businesses/edit', [
             'business' => [
                 'id' => $business->id,
                 'name' => $business->name,
                 'slug' => $business->slug,
+                'email' => $business->email,
+                'phone' => $business->phone,
+                'phoneCountry' => $detectedCountry,
                 'isPersonal' => $business->is_personal,
             ],
+            'countries' => collect(Country::cases())->map(fn (Country $country) => [
+                'code' => $country->value,
+                'name' => $country->label(),
+                'flag' => $country->flag(),
+                'dialCode' => $country->dialCode(),
+                'placeholder' => $country->placeholder(),
+            ])->toArray(),
             'members' => $business->members()->get()->map(function (User $member) {
                 /** @var Membership $membership */
                 $membership = $member->getRelation('pivot');
@@ -168,15 +194,51 @@ class BusinessController extends Controller
     {
         Gate::authorize('update', $business);
 
-        $business = DB::transaction(function () use ($request, $business) {
+        $user = $request->user();
+        $oldPhone = $business->phone;
+        $newPhone = $request->validated('phone');
+
+        $phoneChanged = $newPhone !== $oldPhone;
+        $hasUsedPhoneBefore = false;
+
+        $business = DB::transaction(function () use ($request, $business, $phoneChanged, $newPhone, $user, &$hasUsedPhoneBefore) {
             $business = Business::whereKey($business->id)->lockForUpdate()->firstOrFail();
 
-            $business->update(['name' => $request->validated('name')]);
+            $business->fill([
+                'name' => $request->validated('name'),
+                'email' => $request->validated('email'),
+                'phone' => $newPhone,
+            ]);
+
+            if ($phoneChanged) {
+                $business->phone_verified_at = null;
+            }
+
+            $business->save();
+
+            if ($phoneChanged && $newPhone) {
+                $hasUsedPhoneBefore = $user->businesses()
+                    ->where('phone', $newPhone)
+                    ->whereNotNull('phone_verified_at')
+                    ->exists();
+
+                if ($hasUsedPhoneBefore) {
+                    $business->markPhoneAsVerified();
+                }
+            }
 
             return $business;
         });
 
+        if ($phoneChanged && $newPhone && ! $hasUsedPhoneBefore) {
+            $business->sendPhoneVerificationNotification();
+        }
+
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Business updated.')]);
+
+        if ($phoneChanged && $newPhone && ! $hasUsedPhoneBefore) {
+            return to_route('businesses.phone.notice', ['current_business' => $business->slug]);
+        }
 
         return to_route('businesses.edit', ['business' => $business->slug]);
     }

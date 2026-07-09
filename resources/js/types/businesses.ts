@@ -8,6 +8,9 @@ export type Business = {
     role?: BusinessRole;
     roleLabel?: string;
     isCurrent?: boolean;
+    email?: string;
+    phone?: string;
+    phoneCountry?: string;
 };
 
 export type BusinessMember = {

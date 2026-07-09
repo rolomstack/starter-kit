@@ -3,6 +3,8 @@
 use App\Enums\BusinessRole;
 use App\Models\Business;
 use App\Models\User;
+use App\Notifications\VerifyPhoneNotification;
+use Illuminate\Support\Facades\Notification;
 use Inertia\Testing\AssertableInertia as Assert;
 
 test('the businesses index page can be rendered', function () {
@@ -100,7 +102,11 @@ test('business slug uses next available suffix', function () {
 
 test('the business edit page can be rendered', function () {
     $user = User::factory()->create();
-    $business = Business::factory()->create();
+    $business = Business::factory()->create([
+        'email' => 'test@example.com',
+        'phone' => '+2348031234567',
+        'phone_verified_at' => now(),
+    ]);
 
     $business->members()->attach($user, ['role' => BusinessRole::Owner->value]);
 
@@ -112,6 +118,10 @@ test('the business edit page can be rendered', function () {
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('businesses/edit')
+            ->where('business.email', 'test@example.com')
+            ->where('business.phone', '+2348031234567')
+            ->where('business.phoneCountry', 'NG')
+            ->has('countries')
             ->where('members.0.role', BusinessRole::Owner->value)
             ->where('members.0.role_label', BusinessRole::Owner->label()),
         );
@@ -127,6 +137,7 @@ test('businesses can be updated by owners', function () {
         ->actingAs($user)
         ->patch(route('businesses.update', $business), [
             'name' => 'Updated Name',
+            'email' => 'new-email@example.com',
         ]);
 
     $response->assertRedirect(route('businesses.edit', $business->fresh()));
@@ -134,7 +145,104 @@ test('businesses can be updated by owners', function () {
     $this->assertDatabaseHas('businesses', [
         'id' => $business->id,
         'name' => 'Updated Name',
+        'email' => 'new-email@example.com',
+        'phone' => null,
     ]);
+});
+
+test('business update fails with invalid phone or email', function () {
+    $user = User::factory()->create();
+    $business = Business::factory()->create();
+
+    $business->members()->attach($user, ['role' => BusinessRole::Owner->value]);
+
+    // Invalid email
+    $response = $this
+        ->actingAs($user)
+        ->patch(route('businesses.update', $business), [
+            'name' => 'Name',
+            'email' => 'not-an-email',
+        ]);
+
+    $response->assertSessionHasErrors(['email']);
+
+    // Invalid phone number format for US
+    $response = $this
+        ->actingAs($user)
+        ->patch(route('businesses.update', $business), [
+            'name' => 'Name',
+            'phone_country' => 'US',
+            'phone' => '12345',
+        ]);
+
+    $response->assertSessionHasErrors(['phone']);
+});
+
+test('updating to a new phone number redirects to verification notice if not verified before', function () {
+    $user = User::factory()->create();
+    $business = Business::factory()->create([
+        'phone' => '2015550123',
+        'phone_verified_at' => now(),
+    ]);
+
+    $business->members()->attach($user, ['role' => BusinessRole::Owner->value]);
+
+    Notification::fake();
+
+    $response = $this
+        ->actingAs($user)
+        ->patch(route('businesses.update', $business), [
+            'name' => $business->name,
+            'phone_country' => 'US',
+            'phone' => '2015550124', // new number
+        ]);
+
+    $business = $business->fresh();
+    expect($business->phone)->toEqual('2015550124');
+    expect($business->hasVerifiedPhone())->toBeFalse();
+
+    $response->assertRedirect(route('businesses.phone.notice', ['current_business' => $business->slug]));
+
+    Notification::assertSentTo(
+        $business,
+        VerifyPhoneNotification::class
+    );
+});
+
+test('updating to a new phone number auto-verifies if phone has been verified by user before', function () {
+    $user = User::factory()->create();
+    $business = Business::factory()->create([
+        'phone' => '2015550123',
+        'phone_verified_at' => now(),
+    ]);
+    $business->members()->attach($user, ['role' => BusinessRole::Owner->value]);
+
+    $otherBusiness = Business::factory()->create([
+        'phone' => '2015550124',
+        'phone_verified_at' => now(), // verified
+    ]);
+    $otherBusiness->members()->attach($user, ['role' => BusinessRole::Owner->value]);
+
+    Notification::fake();
+
+    $response = $this
+        ->actingAs($user)
+        ->patch(route('businesses.update', $business), [
+            'name' => $business->name,
+            'phone_country' => 'US',
+            'phone' => '2015550124', // new number but verified in otherBusiness
+        ]);
+
+    $business = $business->fresh();
+    expect($business->phone)->toEqual('2015550124');
+    expect($business->hasVerifiedPhone())->toBeTrue();
+
+    $response->assertRedirect(route('businesses.edit', ['business' => $business->slug]));
+
+    Notification::assertNotSentTo(
+        $business,
+        VerifyPhoneNotification::class
+    );
 });
 
 test('businesses cannot be updated by members', function () {

@@ -1,4 +1,4 @@
-import { Form, Head, router } from '@inertiajs/react';
+import { Form, Head, router, usePage } from '@inertiajs/react';
 import { ChevronDown, Mail, UserPlus, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import CancelInvitationModal from '@/components/cancel-invitation-modal';
@@ -17,7 +17,15 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { InputGroup, InputGroupInput } from '@/components/ui/input-group';
 import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import {
     Tooltip,
     TooltipContent,
@@ -33,6 +41,8 @@ import type {
     BusinessInvitation,
     BusinessMember,
     BusinessPermissions,
+    CountryData,
+    PageProps,
 } from '@/types';
 
 type Props = {
@@ -41,6 +51,7 @@ type Props = {
     invitations: BusinessInvitation[];
     permissions: BusinessPermissions;
     availableRoles: RoleOption[];
+    countries?: CountryData[];
 };
 
 export default function BusinessEdit({
@@ -49,8 +60,15 @@ export default function BusinessEdit({
     invitations,
     permissions,
     availableRoles,
+    countries = [],
 }: Props) {
     const getInitials = useInitials();
+
+    const { props } = usePage<PageProps>();
+    const countriesList = countries.length > 0 ? countries : (props.countries ?? []);
+    const [phoneCountry, setPhoneCountry] = useState<string>(
+        business.phoneCountry || countriesList[0]?.code || 'US',
+    );
 
     const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -122,6 +140,65 @@ export default function BusinessEdit({
                                                 required
                                             />
                                             <InputError message={errors.name} />
+                                        </div>
+
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="email">
+                                                Email Address
+                                            </Label>
+                                            <Input
+                                                id="email"
+                                                type="email"
+                                                name="email"
+                                                data-test="business-email-input"
+                                                defaultValue={business.email}
+                                                placeholder="Email Address"
+                                            />
+                                            <InputError message={errors.email} />
+                                        </div>
+
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="phone">
+                                                Phone Number (whatsapp preferred)
+                                            </Label>
+                                            <InputGroup>
+                                                <Select
+                                                    name="phone_country"
+                                                    value={phoneCountry}
+                                                    onValueChange={setPhoneCountry}
+                                                >
+                                                    <SelectTrigger className="h-10 w-[95px] rounded-r-none border-0 bg-transparent shadow-none focus-visible:border-0 focus-visible:ring-0">
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {countriesList.map((country) => (
+                                                            <SelectItem
+                                                                key={country.code}
+                                                                value={country.code}
+                                                            >
+                                                                <span>{country.flag}</span>
+                                                                <span>{country.dialCode}</span>
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                <div className="h-6 w-px shrink-0 bg-border" />
+                                                <InputGroupInput
+                                                    id="phone"
+                                                    type="text"
+                                                    data-test="business-phone-input"
+                                                    defaultValue={business.phone}
+                                                    autoComplete="phone"
+                                                    name="phone"
+                                                    placeholder={
+                                                        countriesList.find(
+                                                            (c) => c.code === phoneCountry,
+                                                        )?.placeholder || 'Phone number'
+                                                    }
+                                                />
+                                            </InputGroup>
+                                            <InputError message={errors.phone} />
+                                            <InputError message={errors.phone_country} />
                                         </div>
 
                                         <div className="flex items-center gap-4">
