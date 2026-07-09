@@ -12,11 +12,18 @@ class VerifyPhoneNotification extends Notification implements ShouldQueue
     use Queueable;
 
     /**
+     * Determine whether the notification should be dispatched after all database transactions have committed.
+     *
+     * @var bool
+     */
+    public $afterCommit;
+
+    /**
      * Create a new notification instance.
      */
     public function __construct(public string $token)
     {
-        //
+        $this->afterCommit = ! app()->runningUnitTests();
     }
 
     /**
