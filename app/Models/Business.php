@@ -6,6 +6,7 @@ use App\Concerns\GeneratesUniqueBusinessSlugs;
 use App\Concerns\HasPhoneVerification;
 use App\Contracts\MustVerifyPhone;
 use App\Enums\BusinessRole;
+use App\Enums\Country;
 use Database\Factories\BusinessFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
@@ -23,6 +24,7 @@ use Illuminate\Support\Carbon;
  * @property string $slug
  * @property bool $is_personal
  * @property string|null $phone
+ * @property Country|null $phone_country
  * @property Carbon|null $phone_verified_at
  * @property string|null $email
  * @property Carbon|null $created_at
@@ -32,7 +34,7 @@ use Illuminate\Support\Carbon;
  * @property-read Collection<int, Membership> $memberships
  * @property-read Collection<int, User> $members
  */
-#[Fillable(['name', 'slug', 'is_personal', 'phone', 'email'])]
+#[Fillable(['name', 'slug', 'is_personal', 'phone', 'phone_country', 'email'])]
 class Business extends Model implements MustVerifyPhone
 {
     /** @use HasFactory<BusinessFactory> */
@@ -54,6 +56,12 @@ class Business extends Model implements MustVerifyPhone
         static::updating(function (Business $business) {
             if ($business->isDirty('name')) {
                 $business->slug = static::generateUniqueBusinessSlug($business->name, $business->id);
+            }
+        });
+
+        static::saving(function (Business $business) {
+            if ($business->phone && empty($business->phone_country)) {
+                $business->phone_country = Country::detect($business->phone);
             }
         });
     }
@@ -111,6 +119,7 @@ class Business extends Model implements MustVerifyPhone
         return [
             'is_personal' => 'boolean',
             'phone_verified_at' => 'datetime',
+            'phone_country' => Country::class,
         ];
     }
 

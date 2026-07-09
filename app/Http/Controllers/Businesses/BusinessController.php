@@ -59,32 +59,25 @@ class BusinessController extends Controller
         $user = $request->user();
         $isFirstBusiness = ! $user->personalBusiness() && ! $user->businesses()->exists();
 
-        $rules = [
+        $validated = $request->validate( [
             'name' => ['required', 'string', 'max:255', new BusinessName],
-            'email' => ['nullable', 'string', 'email', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255'],
             'phone_country' => ['nullable', new Enum(Country::class)],
             'phone' => ['nullable', 'string', new Phone('phone_country')],
-        ];
-
-        if ($isFirstBusiness) {
-            $rules['phone_country'] = ['required', new Enum(Country::class)];
-            $rules['phone'] = ['required', 'string', new Phone('phone_country')];
-        }
-
-        $validated = $request->validate($rules);
+        ]);
 
         $hasUsedPhoneBefore = false;
+        $phone = $validated['phone'] ?? null;
 
-        $business = DB::transaction(function () use ($createBusiness, $user, $validated, $isFirstBusiness, &$hasUsedPhoneBefore) {
+        $business = DB::transaction(function () use ($phone, $createBusiness, $user, $validated, $isFirstBusiness, &$hasUsedPhoneBefore) {
             $business = $createBusiness->handle(
                 $user,
                 $validated['name'],
                 $validated['email'] ?? $user->email,
                 phone: $validated['phone'] ?? null,
+                phoneCountry: isset($validated['phone_country']) ? Country::tryFrom($validated['phone_country']) : null,
                 isPersonal: $isFirstBusiness
             );
-
-            $phone = $validated['phone'] ?? null;
 
             if ($phone) {
                 $hasUsedPhoneBefore = $user->businesses()
@@ -99,8 +92,6 @@ class BusinessController extends Controller
 
             return $business;
         });
-
-        $phone = $validated['phone'] ?? null;
 
         if ($phone && ! $hasUsedPhoneBefore) {
             $business->sendPhoneVerificationNotification();
@@ -126,21 +117,7 @@ class BusinessController extends Controller
     {
         $user = $request->user();
 
-        $phone = $business->phone;
-        $detectedCountry = null;
-        if ($phone) {
-            $cleanPhone = preg_replace('/[\s\-().]/', '', $phone);
-            $cases = Country::cases();
-            usort($cases, fn ($a, $b) => strlen($b->dialCode()) <=> strlen($a->dialCode()));
-            foreach ($cases as $country) {
-                $dialCode = $country->dialCode();
-                $dialCodeClean = ltrim($dialCode, '+');
-                if (str_starts_with($cleanPhone, $dialCode) || str_starts_with($cleanPhone, $dialCodeClean)) {
-                    $detectedCountry = $country->value;
-                    break;
-                }
-            }
-        }
+        $detectedCountry = $business->phone_country?->value;
 
         return Inertia::render('businesses/edit', [
             'business' => [
@@ -208,6 +185,7 @@ class BusinessController extends Controller
                 'name' => $request->validated('name'),
                 'email' => $request->validated('email'),
                 'phone' => $newPhone,
+                'phone_country' => $request->validated('phone_country'),
             ]);
 
             if ($phoneChanged) {

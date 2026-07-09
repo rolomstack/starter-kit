@@ -83,4 +83,28 @@ enum Country: string
             self::NG => '803 123 4567',
         };
     }
+
+    /**
+     * Detect the country from a phone number prefix.
+     */
+    public static function detect(?string $phone): ?self
+    {
+        if (! $phone) {
+            return null;
+        }
+
+        $cleanPhone = preg_replace('/[\s\-().]/', '', $phone);
+        $cases = self::cases();
+        usort($cases, fn ($a, $b) => strlen($b->dialCode()) <=> strlen($a->dialCode()));
+
+        foreach ($cases as $country) {
+            $dialCode = $country->dialCode();
+            $dialCodeClean = ltrim($dialCode, '+');
+            if (str_starts_with($cleanPhone, $dialCode) || str_starts_with($cleanPhone, $dialCodeClean)) {
+                return $country;
+            }
+        }
+
+        return null;
+    }
 }

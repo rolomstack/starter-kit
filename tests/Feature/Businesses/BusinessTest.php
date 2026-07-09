@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\BusinessRole;
+use App\Enums\Country;
 use App\Models\Business;
 use App\Models\User;
 use App\Notifications\VerifyPhoneNotification;
@@ -52,6 +53,7 @@ test('businesses can be created with custom email and phone', function () {
         'name' => 'Test Business Custom',
         'email' => 'custom-business@example.com',
         'phone' => '2015550123',
+        'phone_country' => 'US',
         'is_personal' => false,
     ]);
 });
@@ -199,6 +201,7 @@ test('updating to a new phone number redirects to verification notice if not ver
 
     $business = $business->fresh();
     expect($business->phone)->toEqual('2015550124');
+    expect($business->phone_country)->toEqual(Country::US);
     expect($business->hasVerifiedPhone())->toBeFalse();
 
     $response->assertRedirect(route('businesses.phone.notice', ['current_business' => $business->slug]));
