@@ -22,7 +22,15 @@ class EnsurePhoneIsVerified
             return $next($request);
         }
 
-        if ($request->is("{$business->slug}/phone/verify", "{$business->slug}/phone/verify/resend", 'logout')) {
+        if ($request->is(
+            "{$business->slug}/phone/verify",
+            "{$business->slug}/phone/verify/resend",
+            'logout'
+        )) {
+            return $next($request);
+        }
+
+        if ($request->routeIs('businesses.update') && $request->user()?->ownsBusiness($business)) {
             return $next($request);
         }
 

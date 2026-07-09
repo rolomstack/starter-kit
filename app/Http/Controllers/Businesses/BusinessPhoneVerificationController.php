@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Businesses;
 
+use App\Enums\Country;
 use App\Http\Controllers\Controller;
 use App\Models\Business;
+use App\Rules\Phone;
 use Closure;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,8 +27,18 @@ class BusinessPhoneVerificationController extends Controller
             'business' => [
                 'name' => $current_business->name,
                 'slug' => $current_business->slug,
+                'email' => $current_business->email,
                 'phone' => $current_business->phone,
+                'phoneCountry' => $current_business->phone_country?->value,
             ],
+            'canUpdatePhone' => $request->user()->ownsBusiness($current_business),
+            'countries' => collect(Country::cases())->map(fn (Country $country) => [
+                'code' => $country->value,
+                'name' => $country->label(),
+                'flag' => $country->flag(),
+                'dialCode' => $country->dialCode(),
+                'placeholder' => $country->placeholder(),
+            ])->toArray(),
             'status' => $request->session()->get('status'),
         ]);
     }

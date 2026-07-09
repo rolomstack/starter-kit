@@ -161,3 +161,136 @@ test('business creation auto verifies and redirects normally if phone has been v
         VerifyPhoneNotification::class
     );
 });
+
+test('owner can update business phone number from verification screen', function () {
+    $user = User::factory()->create();
+    $business = Business::factory()->create([
+        'phone' => '1234567890',
+        'phone_country' => 'US',
+        'phone_verified_at' => null,
+    ]);
+    $business->members()->attach($user, ['role' => BusinessRole::Owner->value]);
+    $user->switchBusiness($business);
+
+    Notification::fake();
+
+    $response = $this->actingAs($user)->patch(route('businesses.update', ['business' => $business->slug]), [
+        'name' => $business->name,
+        'phone' => '2015550123',
+        'phone_country' => 'US',
+    ]);
+
+    $response->assertRedirect(route('businesses.phone.notice', ['current_business' => $business->slug]));
+
+    $business = $business->fresh();
+    expect($business->phone)->toBe('2015550123');
+    expect($business->hasVerifiedPhone())->toBeFalse();
+
+    Notification::assertSentTo(
+        $business,
+        VerifyPhoneNotification::class
+    );
+});
+
+test('non-owner cannot update business phone number from verification screen', function () {
+    $owner = User::factory()->create();
+    $member = User::factory()->create();
+    $business = Business::factory()->create([
+        'phone' => '1234567890',
+        'phone_country' => 'US',
+        'phone_verified_at' => null,
+    ]);
+    $business->members()->attach($owner, ['role' => BusinessRole::Owner->value]);
+    $business->members()->attach($member, ['role' => BusinessRole::Member->value]);
+    $member->switchBusiness($business);
+
+    $response = $this->actingAs($member)->patch(route('businesses.update', ['business' => $business->slug]), [
+        'name' => $business->name,
+        'phone' => '2015550123',
+        'phone_country' => 'US',
+    ]);
+
+    $response->assertRedirect(route('businesses.phone.notice', ['current_business' => $business->slug]));
+    expect($business->fresh()->phone)->toBe('1234567890');
+});
+
+test('admin without ownership cannot update business phone number', function () {
+    $owner = User::factory()->create();
+    $admin = User::factory()->create();
+    $business = Business::factory()->create([
+        'phone' => '1234567890',
+        'phone_country' => 'US',
+        'phone_verified_at' => null,
+    ]);
+    $business->members()->attach($owner, ['role' => BusinessRole::Owner->value]);
+    $business->members()->attach($admin, ['role' => BusinessRole::Admin->value]);
+    $admin->switchBusiness($business);
+
+    $response = $this->actingAs($admin)->patch(route('businesses.update', ['business' => $business->slug]), [
+        'name' => $business->name,
+        'phone' => '2015550123',
+        'phone_country' => 'US',
+    ]);
+
+    $response->assertRedirect(route('businesses.phone.notice', ['current_business' => $business->slug]));
+    expect($business->fresh()->phone)->toBe('1234567890');
+});
+
+test('updating phone to empty value bypasses verification', function () {
+    $user = User::factory()->create();
+    $business = Business::factory()->create([
+        'phone' => '1234567890',
+        'phone_country' => 'US',
+        'phone_verified_at' => null,
+    ]);
+    $business->members()->attach($user, ['role' => BusinessRole::Owner->value]);
+    $user->switchBusiness($business);
+
+    $response = $this->actingAs($user)->patch(route('businesses.update', ['business' => $business->slug]), [
+        'name' => $business->name,
+        'phone' => '',
+        'phone_country' => 'US',
+    ]);
+
+    // Bypassing verification redirects directly to edit business settings page
+    $response->assertRedirect(route('businesses.edit', ['business' => $business->slug]));
+    $business = $business->fresh();
+    expect($business->phone)->toBeNull();
+    expect($business->hasVerifiedPhone())->toBeFalse();
+});
+
+test('updating phone to an already verified number auto-verifies it', function () {
+    $user = User::factory()->create();
+    $otherBusiness = Business::factory()->create([
+        'phone' => '2015550123',
+        'phone_country' => 'US',
+        'phone_verified_at' => now(),
+    ]);
+    $otherBusiness->members()->attach($user, ['role' => BusinessRole::Owner->value]);
+
+    $business = Business::factory()->create([
+        'phone' => '1234567890',
+        'phone_country' => 'US',
+        'phone_verified_at' => null,
+    ]);
+    $business->members()->attach($user, ['role' => BusinessRole::Owner->value]);
+    $user->switchBusiness($business);
+
+    Notification::fake();
+
+    $response = $this->actingAs($user)->patch(route('businesses.update', ['business' => $business->slug]), [
+        'name' => $business->name,
+        'phone' => '2015550123',
+        'phone_country' => 'US',
+    ]);
+
+    $response->assertRedirect(route('businesses.edit', ['business' => $business->slug]));
+    $business = $business->fresh();
+    expect($business->phone)->toBe('2015550123');
+    expect($business->hasVerifiedPhone())->toBeTrue();
+
+    Notification::assertNotSentTo(
+        $business,
+        VerifyPhoneNotification::class
+    );
+});

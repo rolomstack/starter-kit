@@ -161,6 +161,11 @@ class BusinessController extends Controller
         $newPhone = $request->validated('phone');
 
         $phoneChanged = $newPhone !== $oldPhone;
+
+        if ($phoneChanged) {
+            abort_unless($user->ownsBusiness($business), 403, 'Only the business owner can update the phone number.');
+        }
+
         $hasUsedPhoneBefore = false;
 
         $business = DB::transaction(function () use ($request, $business, $phoneChanged, $newPhone, $user, &$hasUsedPhoneBefore) {
