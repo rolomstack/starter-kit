@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid } from 'lucide-react';
+import { LayoutGrid, Settings } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { BusinessSwitcher } from '@/components/business-switcher';
 import { NavFooter } from '@/components/nav-footer';
@@ -15,6 +15,9 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
+import { edit as editAppearance } from '@/routes/appearance';
+import { edit as editProfile } from '@/routes/profile';
+import { edit as editSecurity } from '@/routes/security';
 import type { PageProps } from '@/types';
 import type { NavItem } from '@/types';
 
@@ -30,7 +33,27 @@ export function AppSidebar() {
             href: dashboardUrl,
             icon: LayoutGrid,
         },
+        {
+            title: 'Settings',
+            href: editProfile(),
+            icon: Settings,
+            items: [
+                {
+                    title: 'Profile',
+                    href: editProfile(),
+                },
+                {
+                    title: 'Security',
+                    href: editSecurity(),
+                },
+                {
+                    title: 'Appearance',
+                    href: editAppearance(),
+                },
+            ],
+        },
     ];
+
 
     const footerNavItems: NavItem[] = [];
 
