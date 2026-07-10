@@ -1,6 +1,7 @@
 <?php
 
 use App\Contracts\PaymentGateway;
+use App\DTOs\Payments\GatewayInitialization;
 use App\Enums\BusinessRole;
 use App\Models\Business;
 use App\Models\Plan;
@@ -36,7 +37,7 @@ it('displays the subscription index page', function () {
 it('can initiate checkout', function () {
     $this->mock(PaymentGateway::class, function (MockInterface $mock) {
         $mock->shouldReceive('name')->andReturn('paystack');
-        $mock->shouldReceive('initializeTransaction')->once()->andReturn(new \App\DTOs\Payments\GatewayInitialization(
+        $mock->shouldReceive('initializeTransaction')->once()->andReturn(new GatewayInitialization(
             reference: 'ref_123',
             checkoutUrl: 'https://checkout.paystack.com/test',
             customerId: 'CUST_123',
