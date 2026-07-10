@@ -22,18 +22,6 @@ use Inertia\Response;
 class BusinessController extends Controller
 {
     /**
-     * Display a listing of the user's businesses.
-     */
-    public function index(Request $request): Response
-    {
-        $user = $request->user();
-
-        return Inertia::render('businesses/index', [
-            'businesses' => $user->toUserBusinesses(includeCurrent: true),
-        ]);
-    }
-
-    /**
      * Show the page to create a new business.
      */
     public function create(Request $request): Response
@@ -246,7 +234,7 @@ class BusinessController extends Controller
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('You left the business ":name"', ['name' => $business->name])]);
 
-        return to_route('businesses.index');
+        return to_route('dashboard');
     }
 
     /**
@@ -275,6 +263,6 @@ class BusinessController extends Controller
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Business deleted.')]);
 
-        return to_route('businesses.index');
+        return to_route('dashboard');
     }
 }

@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import type { PropsWithChildren } from 'react';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
@@ -6,36 +6,37 @@ import { Separator } from '@/components/ui/separator';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn, toUrl } from '@/lib/utils';
 import { edit as editAppearance } from '@/routes/appearance';
-import { index as businesses } from '@/routes/businesses';
+import { edit as editBusiness } from '@/routes/businesses';
 import { edit } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
-import type { NavItem } from '@/types';
-
-const sidebarNavItems: NavItem[] = [
-    {
-        title: 'Profile',
-        href: edit(),
-        icon: null,
-    },
-    {
-        title: 'Security',
-        href: editSecurity(),
-        icon: null,
-    },
-    {
-        title: 'Businesses',
-        href: businesses(),
-        icon: null,
-    },
-    {
-        title: 'Appearance',
-        href: editAppearance(),
-        icon: null,
-    },
-];
-
+import type { NavItem, PageProps } from '@/types';
 export default function SettingsLayout({ children }: PropsWithChildren) {
     const { isCurrentOrParentUrl } = useCurrentUrl();
+    const { props } = usePage<PageProps>();
+    const currentBusinessSlug = props.currentBusiness?.slug ?? '';
+
+    const sidebarNavItems: NavItem[] = [
+        {
+            title: 'Profile',
+            href: edit(),
+            icon: null,
+        },
+        {
+            title: 'Security',
+            href: editSecurity(),
+            icon: null,
+        },
+        {
+            title: 'Business',
+            href: editBusiness({ business: currentBusinessSlug }),
+            icon: null,
+        },
+        {
+            title: 'Appearance',
+            href: editAppearance(),
+            icon: null,
+        },
+    ];
 
     return (
         <div className="px-4 py-6">

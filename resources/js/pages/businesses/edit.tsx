@@ -33,7 +33,7 @@ import {
     TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useInitials } from '@/hooks/use-initials';
-import { edit, index, update } from '@/routes/businesses';
+import { edit, update } from '@/routes/businesses';
 import { update as updateMember } from '@/routes/businesses/members';
 import { index as subscriptionsIndex } from '@/routes/businesses/subscriptions';
 import type {
@@ -481,10 +481,6 @@ BusinessEdit.layout = (props: {
     business: { name: string; slug: string };
 }) => ({
     breadcrumbs: [
-        {
-            title: 'Businesses',
-            href: index(),
-        },
         {
             title: props.business.name,
             href: edit(props.business.slug),

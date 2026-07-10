@@ -29,7 +29,6 @@ Route::middleware(['auth', 'verified', 'verified.phone'])->group(function () {
 
     Route::inertia('settings/appearance', 'settings/appearance')->name('appearance.edit');
 
-    Route::get('settings/businesses', [BusinessController::class, 'index'])->name('businesses.index');
     Route::get('settings/businesses/create', [BusinessController::class, 'create'])->name('businesses.create');
     Route::post('settings/businesses', [BusinessController::class, 'store'])->name('businesses.store');
 

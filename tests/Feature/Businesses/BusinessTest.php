@@ -8,16 +8,6 @@ use App\Notifications\VerifyPhoneNotification;
 use Illuminate\Support\Facades\Notification;
 use Inertia\Testing\AssertableInertia as Assert;
 
-test('the businesses index page can be rendered', function () {
-    $user = User::factory()->create();
-
-    $response = $this
-        ->actingAs($user)
-        ->get(route('businesses.index'));
-
-    $response->assertOk();
-});
-
 test('businesses can be created', function () {
     $user = User::factory()->create();
 
@@ -391,7 +381,7 @@ test('members can leave non personal businesses', function () {
         ->actingAs($member)
         ->delete(route('businesses.leave', $business));
 
-    $response->assertRedirect(route('businesses.index'));
+    $response->assertRedirect(route('dashboard'));
     $response->assertInertiaFlash('toast', ['type' => 'success', 'message' => "You left the business \"{$business->name}\""]);
 
     expect($member->fresh()->belongsToBusiness($business))->toBeFalse();
@@ -417,7 +407,7 @@ test('leaving current business switches to alphabetically first remaining busine
         ->actingAs($member)
         ->delete(route('businesses.leave', $zuluBusiness));
 
-    $response->assertRedirect(route('businesses.index'));
+    $response->assertRedirect(route('dashboard'));
 
     expect($member->fresh()->belongsToBusiness($zuluBusiness))->toBeFalse();
     expect($member->fresh()->current_business_id)->toEqual($alphaBusiness->id);
@@ -547,7 +537,7 @@ test('users cannot switch to business they dont belong to', function () {
 });
 
 test('guests cannot access businesses', function () {
-    $response = $this->get(route('businesses.index'));
+    $response = $this->get(route('businesses.create'));
 
     $response->assertRedirect(route('login'));
 });

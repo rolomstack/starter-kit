@@ -4,7 +4,7 @@ import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { index, edit as businessEdit } from '@/routes/businesses';
+import { edit as businessEdit } from '@/routes/businesses';
 import { checkout, cancel } from '@/routes/businesses/subscriptions';
 
 interface PlanFeature {
@@ -162,10 +162,6 @@ SubscriptionsIndex.layout = (props: {
     business: { name: string; slug: string };
 }) => ({
     breadcrumbs: [
-        {
-            title: 'Businesses',
-            href: index(),
-        },
         {
             title: props.business.name,
             href: businessEdit(props.business.slug),
