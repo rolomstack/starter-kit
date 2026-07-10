@@ -3,14 +3,12 @@
 namespace App\Http\Controllers\Businesses;
 
 use App\Actions\Businesses\CreateBusiness;
-use App\Enums\BusinessRole;
 use App\Enums\Country;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Businesses\DeleteBusinessRequest;
 use App\Http\Requests\Businesses\SaveBusinessRequest;
 use App\Http\Requests\Businesses\StoreBusinessRequest;
 use App\Models\Business;
-use App\Models\Membership;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -109,31 +107,7 @@ class BusinessController extends Controller
                 'dialCode' => $country->dialCode(),
                 'placeholder' => $country->placeholder(),
             ])->toArray(),
-            'members' => $business->members()->get()->map(function (User $member) {
-                /** @var Membership $membership */
-                $membership = $member->getRelation('pivot');
-
-                return [
-                    'id' => $member->id,
-                    'name' => $member->name,
-                    'email' => $member->email,
-                    'avatar' => $member->avatar ?? null,
-                    'role' => $membership->role->value,
-                    'role_label' => $membership->role->label(),
-                ];
-            }),
-            'invitations' => $business->invitations()
-                ->whereNull('accepted_at')
-                ->get()
-                ->map(fn ($invitation) => [
-                    'code' => $invitation->code,
-                    'email' => $invitation->email,
-                    'role' => $invitation->role->value,
-                    'role_label' => $invitation->role->label(),
-                    'created_at' => $invitation->created_at->toISOString(),
-                ]),
             'permissions' => $user->toBusinessPermissions($business),
-            'availableRoles' => BusinessRole::assignable(),
         ]);
     }
 

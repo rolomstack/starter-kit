@@ -36,7 +36,7 @@ class BusinessInvitationController extends Controller
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Invitation sent.')]);
 
-        return to_route('businesses.edit', ['business' => $business->slug]);
+        return to_route('businesses.teams.index', ['business' => $business->slug]);
     }
 
     /**
@@ -52,7 +52,7 @@ class BusinessInvitationController extends Controller
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Invitation cancelled.')]);
 
-        return to_route('businesses.edit', ['business' => $business->slug]);
+        return to_route('businesses.teams.index', ['business' => $business->slug]);
     }
 
     public function accept(

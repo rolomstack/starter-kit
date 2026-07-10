@@ -22,7 +22,7 @@ test('business invitations can be created', function () {
             'role' => BusinessRole::Member->value,
         ]);
 
-    $response->assertRedirect(route('businesses.edit', $business));
+    $response->assertRedirect(route('businesses.teams.index', $business));
 
     $this->assertDatabaseHas('business_invitations', [
         'business_id' => $business->id,
@@ -85,7 +85,7 @@ test('business invitations can be created by admins', function () {
             'role' => BusinessRole::Member->value,
         ]);
 
-    $response->assertRedirect(route('businesses.edit', $business));
+    $response->assertRedirect(route('businesses.teams.index', $business));
 });
 
 test('existing business members cannot be invited', function () {
@@ -164,7 +164,7 @@ test('business invitations can be cancelled by owners', function () {
         ->actingAs($owner)
         ->delete(route('businesses.invitations.destroy', [$business, $invitation]));
 
-    $response->assertRedirect(route('businesses.edit', $business));
+    $response->assertRedirect(route('businesses.teams.index', $business));
 
     $this->assertDatabaseMissing('business_invitations', [
         'id' => $invitation->id,

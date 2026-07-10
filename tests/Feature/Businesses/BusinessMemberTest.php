@@ -18,7 +18,7 @@ test('business member roles can be updated by owners', function () {
             'role' => BusinessRole::Admin->value,
         ]);
 
-    $response->assertRedirect(route('businesses.edit', $business));
+    $response->assertRedirect(route('businesses.teams.index', $business));
 
     expect($business->members()->where('user_id', $member->id)->first()->pivot->role->value)->toEqual(BusinessRole::Admin->value);
 });
@@ -54,7 +54,7 @@ test('business members can be removed by owners', function () {
         ->actingAs($owner)
         ->delete(route('businesses.members.destroy', [$business, $member]));
 
-    $response->assertRedirect(route('businesses.edit', $business));
+    $response->assertRedirect(route('businesses.teams.index', $business));
 
     expect($member->fresh()->belongsToBusiness($business))->toBeFalse();
 });

@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\Businesses\BusinessInvitationController;
 use App\Http\Controllers\Businesses\BusinessPhoneVerificationController;
-use App\Http\Controllers\Businesses\SubscriptionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Webhooks\PaystackWebhookController;
 use App\Http\Middleware\EnsureBusinessMembership;
@@ -28,11 +27,6 @@ Route::prefix('{business}')
         Route::get('phone/verify', [BusinessPhoneVerificationController::class, 'show'])->name('businesses.phone.notice');
         Route::post('phone/verify', [BusinessPhoneVerificationController::class, 'verify'])->name('businesses.phone.verify');
         Route::post('phone/verify/resend', [BusinessPhoneVerificationController::class, 'resend'])->name('businesses.phone.resend');
-        // Business Subscription Routes
-        Route::get('subscriptions', [SubscriptionController::class, 'index'])->name('businesses.subscriptions.index');
-        Route::post('subscriptions/checkout', [SubscriptionController::class, 'checkout'])->name('businesses.subscriptions.checkout');
-        Route::get('subscriptions/callback', [SubscriptionController::class, 'callback'])->name('businesses.subscriptions.callback');
-        Route::post('subscriptions/cancel', [SubscriptionController::class, 'cancel'])->name('businesses.subscriptions.cancel');
     });
 
 Route::post('/webhooks/paystack', [PaystackWebhookController::class, 'handle'])->name('webhooks.paystack');

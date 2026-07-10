@@ -113,9 +113,7 @@ test('the business edit page can be rendered', function () {
             ->where('business.email', 'test@example.com')
             ->where('business.phone', '+2348031234567')
             ->where('business.phoneCountry', 'NG')
-            ->has('countries')
-            ->where('members.0.role', BusinessRole::Owner->value)
-            ->where('members.0.role_label', BusinessRole::Owner->label()),
+            ->has('countries'),
         );
 });
 

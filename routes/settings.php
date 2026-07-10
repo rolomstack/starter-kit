@@ -3,6 +3,7 @@
 use App\Http\Controllers\Businesses\BusinessController;
 use App\Http\Controllers\Businesses\BusinessInvitationController;
 use App\Http\Controllers\Businesses\BusinessMemberController;
+use App\Http\Controllers\Businesses\SubscriptionController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SecurityController;
 use App\Http\Middleware\EnsureBusinessMembership;
@@ -39,11 +40,18 @@ Route::middleware(['auth', 'verified', 'verified.phone'])->group(function () {
         Route::post('settings/businesses/{business}/switch', [BusinessController::class, 'switch'])->name('businesses.switch');
         Route::delete('settings/businesses/{business}/leave', [BusinessController::class, 'leave'])->name('businesses.leave');
 
+        Route::get('settings/businesses/{business}/teams', [BusinessMemberController::class, 'index'])->name('businesses.teams.index');
+
         Route::patch('settings/businesses/{business}/members/{user}', [BusinessMemberController::class, 'update'])->name('businesses.members.update');
         Route::delete('settings/businesses/{business}/members/{user}', [BusinessMemberController::class, 'destroy'])->name('businesses.members.destroy');
 
         Route::post('settings/businesses/{business}/invitations', [BusinessInvitationController::class, 'store'])->name('businesses.invitations.store');
         Route::delete('settings/businesses/{business}/invitations/{invitation}', [BusinessInvitationController::class, 'destroy'])->name('businesses.invitations.destroy');
+
+        Route::get('settings/businesses/{business}/subscriptions', [SubscriptionController::class, 'index'])->name('businesses.subscriptions.index');
+        Route::post('settings/businesses/{business}/subscriptions/checkout', [SubscriptionController::class, 'checkout'])->name('businesses.subscriptions.checkout');
+        Route::get('settings/businesses/{business}/subscriptions/callback', [SubscriptionController::class, 'callback'])->name('businesses.subscriptions.callback');
+        Route::post('settings/businesses/{business}/subscriptions/cancel', [SubscriptionController::class, 'cancel'])->name('businesses.subscriptions.cancel');
     });
 });
 

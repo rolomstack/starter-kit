@@ -7,11 +7,13 @@ import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn, toUrl } from '@/lib/utils';
 import { edit as editAppearance } from '@/routes/appearance';
 import { edit as editBusiness } from '@/routes/businesses';
+import { index as subscriptionsIndex } from '@/routes/businesses/subscriptions';
+import { index as teamsIndex } from '@/routes/businesses/teams';
 import { edit } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
 import type { NavItem, PageProps } from '@/types';
 export default function SettingsLayout({ children }: PropsWithChildren) {
-    const { isCurrentOrParentUrl } = useCurrentUrl();
+    const { isCurrentOrParentUrl, isCurrentUrl } = useCurrentUrl();
     const { props } = usePage<PageProps>();
     const currentBusinessSlug = props.currentBusiness?.slug ?? '';
 
@@ -29,6 +31,17 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
         {
             title: 'Business',
             href: editBusiness({ business: currentBusinessSlug }),
+            icon: null,
+            exactMatch: true,
+        },
+        {
+            title: 'Teams',
+            href: teamsIndex({ business: currentBusinessSlug }),
+            icon: null,
+        },
+        {
+            title: 'Subscription',
+            href: subscriptionsIndex({ business: currentBusinessSlug }),
             icon: null,
         },
         {
@@ -58,7 +71,9 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                                 variant="ghost"
                                 asChild
                                 className={cn('w-full justify-start', {
-                                    'bg-muted': isCurrentOrParentUrl(item.href),
+                                    'bg-muted': item.exactMatch
+                                        ? isCurrentUrl(item.href)
+                                        : isCurrentOrParentUrl(item.href),
                                 })}
                             >
                                 <Link href={item.href}>
