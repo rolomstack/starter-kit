@@ -17,7 +17,7 @@ class PlanSeeder extends Seeder
             [
                 'name' => 'Basic',
                 'description' => 'Perfect for small businesses getting started.',
-                'price' => 5000,
+                'price' => 500000,
                 'currency' => 'NGN',
                 'interval' => 'monthly',
                 'is_active' => true,
@@ -37,7 +37,7 @@ class PlanSeeder extends Seeder
             [
                 'name' => 'Pro',
                 'description' => 'For growing businesses with more needs.',
-                'price' => 15000,
+                'price' => 1500000,
                 'currency' => 'NGN',
                 'interval' => 'monthly',
                 'is_active' => true,
@@ -58,7 +58,7 @@ class PlanSeeder extends Seeder
             [
                 'name' => 'Enterprise',
                 'description' => 'Advanced features for large scale operations.',
-                'price' => 50000,
+                'price' => 5000000,
                 'currency' => 'NGN',
                 'interval' => 'monthly',
                 'is_active' => true,
