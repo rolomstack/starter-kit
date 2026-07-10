@@ -67,7 +67,7 @@ class ConfirmPayment
 
             $payment->update([
                 'status' => PaymentStatus::Failed,
-                'error_message' => $transaction?->errorMessage ?? 'Payment failed',
+                'error_message' => $transaction ? $transaction->errorMessage : 'Payment failed',
             ]);
 
             return false;

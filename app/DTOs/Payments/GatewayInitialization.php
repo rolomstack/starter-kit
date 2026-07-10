@@ -4,10 +4,13 @@ namespace App\DTOs\Payments;
 
 class GatewayInitialization
 {
+    /**
+     * @param  array<string, mixed>  $raw
+     */
     public function __construct(
-        public readonly ?string $reference,
-        public readonly ?string $checkoutUrl,
-        public readonly ?string $customerId,
-        public readonly array $raw
+        public string $reference,
+        public string $checkoutUrl,
+        public string $customerId,
+        public array $raw
     ) {}
 }

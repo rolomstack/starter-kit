@@ -2,16 +2,27 @@
 
 namespace App\Models;
 
+use App\Contracts\Billable;
 use App\Contracts\Payable;
 use App\Enums\SubscriptionStatus;
+use Database\Factories\SubscriptionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property Carbon|null $ends_at
+ * @property Carbon|null $trial_ends_at
+ * @property SubscriptionStatus $status
+ * @property Plan $plan
+ */
 class Subscription extends Model implements Payable
 {
+    /** @use HasFactory<SubscriptionFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -49,6 +60,9 @@ class Subscription extends Model implements Payable
         return $this->belongsTo(Plan::class);
     }
 
+    /**
+     * @return MorphMany<Payment, $this>
+     */
     public function payments(): MorphMany
     {
         return $this->morphMany(Payment::class, 'payable');
@@ -71,6 +85,9 @@ class Subscription extends Model implements Payable
 
     public function getPayer(): Model
     {
-        return $this->subscribable;
+        /** @var Billable&Model $payer */
+        $payer = $this->subscribable;
+
+        return $payer;
     }
 }

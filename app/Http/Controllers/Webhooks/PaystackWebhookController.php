@@ -6,6 +6,7 @@ use App\Actions\Payments\ConfirmPayment;
 use App\Contracts\PaymentGateway;
 use App\DTOs\Payments\GatewayTransaction;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -15,7 +16,7 @@ class PaystackWebhookController extends Controller
         Request $request,
         PaymentGateway $gateway,
         ConfirmPayment $confirmer
-    ) {
+    ): JsonResponse {
         // Only allow POST requests
         if (! $request->isMethod('post')) {
             abort(405);
@@ -45,7 +46,7 @@ class PaystackWebhookController extends Controller
         return response()->json(['status' => 'success']);
     }
 
-    protected function handleChargeSuccess(GatewayTransaction $transaction, ConfirmPayment $confirmer)
+    protected function handleChargeSuccess(GatewayTransaction $transaction, ConfirmPayment $confirmer): void
     {
         $reference = $transaction->reference;
 

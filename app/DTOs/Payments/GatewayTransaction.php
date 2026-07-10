@@ -4,6 +4,9 @@ namespace App\DTOs\Payments;
 
 class GatewayTransaction
 {
+    /**
+     * @param  array<string, mixed>  $raw
+     */
     public function __construct(
         public readonly bool $isSuccessful,
         public readonly ?string $reference,

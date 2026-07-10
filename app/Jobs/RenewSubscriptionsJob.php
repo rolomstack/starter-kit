@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Actions\Payments\ChargePayment;
 use App\Enums\PaymentStatus;
 use App\Enums\SubscriptionStatus;
+use App\Models\Payment;
 use App\Models\Subscription;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -45,6 +46,7 @@ class RenewSubscriptionsJob implements ShouldQueue
             }
 
             // Create a pending payment
+            /** @var Payment $payment */
             $payment = $subscription->payments()->create([
                 'amount' => $subscription->plan->price,
                 'status' => PaymentStatus::Pending,

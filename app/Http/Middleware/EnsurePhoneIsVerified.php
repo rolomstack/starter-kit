@@ -44,10 +44,13 @@ class EnsurePhoneIsVerified
      */
     protected function resolveBusiness(Request $request): ?Business
     {
-        $business = $request->route('business') ?? $request->route('business');
+        $business = $request->route('business');
 
-        return is_string($business)
+        /** @var ?Business $resolved */
+        $resolved = is_string($business)
             ? Business::where('slug', $business)->first()
             : $business;
+
+        return $resolved;
     }
 }

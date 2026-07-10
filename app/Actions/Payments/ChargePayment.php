@@ -22,7 +22,7 @@ class ChargePayment
 
             $transaction = $this->gateway->chargeToken($paymentMethod, $payment->amount, $currency, $reference);
 
-            if ($transaction && $transaction->isSuccessful) {
+            if ($transaction->isSuccessful) {
                 $payment->update([
                     'status' => PaymentStatus::Successful,
                     'gateway_reference' => $reference,
@@ -37,7 +37,7 @@ class ChargePayment
             $payment->update([
                 'status' => PaymentStatus::Failed,
                 'gateway_reference' => $reference,
-                'error_message' => $transaction?->errorMessage ?? 'Gateway charge failed',
+                'error_message' => $transaction->errorMessage ?? 'Gateway charge failed',
             ]);
 
             return false;

@@ -10,13 +10,15 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\CheckoutSubscriptionRequest;
 use App\Models\Business;
 use App\Models\Plan;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class SubscriptionController extends Controller
 {
-    public function index(Request $request, Business $business)
+    public function index(Request $request, Business $business): Response
     {
         Gate::authorize('update', $business);
 
@@ -35,8 +37,9 @@ class SubscriptionController extends Controller
         Business $business,
         CreateSubscription $creator,
         InitializePayment $initializer
-    ) {
+    ): \Symfony\Component\HttpFoundation\Response {
         // Validation and authorization are handled by CheckoutSubscriptionRequest
+        /** @var Plan $plan */
         $plan = Plan::findOrFail($request->validated('plan_id'));
 
         try {
@@ -51,7 +54,7 @@ class SubscriptionController extends Controller
         }
     }
 
-    public function callback(Request $request, Business $business, ConfirmPayment $confirmer)
+    public function callback(Request $request, Business $business, ConfirmPayment $confirmer): RedirectResponse
     {
         Gate::authorize('update', $business);
 
@@ -74,7 +77,7 @@ class SubscriptionController extends Controller
         }
     }
 
-    public function cancel(Request $request, Business $business, CancelSubscription $canceler)
+    public function cancel(Request $request, Business $business, CancelSubscription $canceler): RedirectResponse
     {
         Gate::authorize('update', $business);
 

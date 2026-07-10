@@ -10,11 +10,17 @@ class PaymentMethod extends Model
 {
     protected $guarded = [];
 
+    /**
+     * @return MorphTo<Model, $this>
+     */
     public function payable(): MorphTo
     {
         return $this->morphTo();
     }
 
+    /**
+     * @return HasMany<Subscription, $this>
+     */
     public function subscriptions(): HasMany
     {
         return $this->hasMany(Subscription::class);

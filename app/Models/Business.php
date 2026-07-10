@@ -5,7 +5,9 @@ namespace App\Models;
 use App\Concerns\GeneratesUniqueBusinessSlugs;
 use App\Concerns\HasPhoneVerification;
 use App\Concerns\HasSubscriptions;
+use App\Contracts\Billable;
 use App\Contracts\MustVerifyPhone;
+use App\Contracts\Subscribable;
 use App\Enums\BusinessRole;
 use App\Enums\Country;
 use Database\Factories\BusinessFactory;
@@ -36,7 +38,7 @@ use Illuminate\Support\Carbon;
  * @property-read Collection<int, User> $members
  */
 #[Fillable(['name', 'slug', 'is_personal', 'phone', 'phone_country', 'email'])]
-class Business extends Model implements MustVerifyPhone
+class Business extends Model implements Billable, MustVerifyPhone, Subscribable
 {
     /** @use HasFactory<BusinessFactory> */
     use GeneratesUniqueBusinessSlugs, HasFactory, HasPhoneVerification, HasSubscriptions, Notifiable, SoftDeletes;

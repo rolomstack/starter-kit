@@ -16,6 +16,9 @@ class PaymentSucceeded
     /**
      * Create a new event instance.
      */
+    /**
+     * @param  array<string, mixed>|null  $transaction
+     */
     public function __construct(
         public Payment $payment,
         public ?array $transaction = null

@@ -15,24 +15,22 @@ interface PaymentGateway
     public function name(): string;
 
     /**
-     * Create a customer representation in the gateway.
-     */
-    public function createCustomer(Model $payable): array;
-
-    /**
      * Initialize a transaction on the gateway (e.g. for tokenizing a card).
      */
     public function initializeTransaction(Model $payable, int $amount, string $callbackUrl): GatewayInitialization;
 
     /**
-     * Cancel an existing subscription on the gateway.
-     * (We may no longer need this if the app is solely responsible for billing, but kept for compatibility).
+     * Create a customer profile on the gateway (optional).
+     *
+     * @return array<string, mixed>|null Gateway response payload or null if not supported
      */
+    public function createCustomer(Model $customer): ?array;
 
     /**
-     * Charge a previously tokenized payment method.
+     * Charge an existing gateway token/authorization.
+     * Amount should be in lowest denomination (e.g., kobo for NGN).
      */
-    public function chargeToken(PaymentMethod $method, float $amount, string $currency, string $reference): GatewayTransaction;
+    public function chargeToken(PaymentMethod $paymentMethod, int $amount, string $currency, string $reference): ?GatewayTransaction;
 
     /**
      * Verify a transaction and return its details.
@@ -41,6 +39,8 @@ interface PaymentGateway
 
     /**
      * Parse a webhook payload into a GatewayTransaction.
+     *
+     * @param  array<string, mixed>  $payload
      */
     public function parseWebhookPayload(array $payload): GatewayTransaction;
 }

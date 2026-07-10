@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Actions\Subscriptions\ProcessRenewals;
+use App\Jobs\RenewSubscriptionsJob;
 use Illuminate\Console\Command;
 
 class ProcessSubscriptions extends Command
@@ -19,10 +19,10 @@ class ProcessSubscriptions extends Command
     /**
      * Execute the console command.
      */
-    public function handle(ProcessRenewals $processRenewals)
+    public function handle(): void
     {
-        $this->info('Processing subscription renewals...');
-        $processRenewals->execute();
-        $this->info('Done processing subscription renewals.');
+        $this->info('Dispatching subscription renewals job...');
+        RenewSubscriptionsJob::dispatch();
+        $this->info('Done dispatching subscription renewals.');
     }
 }

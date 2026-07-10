@@ -2,6 +2,7 @@
 
 namespace App\Actions\Payments;
 
+use App\Contracts\Billable;
 use App\Contracts\PaymentGateway;
 use App\DTOs\Payments\GatewayTransaction;
 use App\Models\PaymentMethod;
@@ -14,12 +15,13 @@ class UpdatePaymentMethod
     ) {}
 
     /**
-     * @param  Model  $owner  Owner of the payment method (e.g. Business or User)
+     * @param  Billable&Model  $owner  Owner of the payment method
      * @param  GatewayTransaction  $transaction  The gateway transaction payload
      */
-    public function execute(Model $owner, GatewayTransaction $transaction): ?PaymentMethod
+    public function execute(Billable&Model $owner, GatewayTransaction $transaction): ?PaymentMethod
     {
         if ($transaction->authorizationCode) {
+            /** @var PaymentMethod $paymentMethod */
             $paymentMethod = $owner->paymentMethods()->updateOrCreate(
                 ['gateway_token' => $transaction->authorizationCode],
                 [

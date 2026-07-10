@@ -3,12 +3,14 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Database\Factories\PlanFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Plan extends Model
 {
+    /** @use HasFactory<PlanFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -39,7 +41,7 @@ class Plan extends Model
 
     public function calculateNextBillingDate(?Carbon $from = null): Carbon
     {
-        $baseDate = $from ? $from->copy() : now();
+        $baseDate = $from ? $from->copy() : Carbon::now();
 
         return match ($this->interval) {
             'monthly' => $baseDate->addMonth(),
