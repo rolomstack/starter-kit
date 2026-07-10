@@ -16,11 +16,7 @@ return new class extends Migration
             $table->id();
             $table->morphs('subscribable');
             $table->foreignId('plan_id')->constrained();
-            $table->string('gateway_name')->default('paystack');
             $table->string('status')->default(SubscriptionStatus::Pending->value);
-            $table->string('reference')->nullable()->index();
-            $table->string('gateway_id')->nullable();
-            $table->string('gateway_customer_id')->nullable();
             $table->timestamp('trial_ends_at')->nullable();
             $table->timestamp('ends_at')->nullable();
             $table->timestamps();

@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('currency', 3)->default('NGN');
             $table->string('status')->default(PaymentStatus::Pending->value); // pending, successful, failed
             $table->text('error_message')->nullable();
+            $table->json('metadata')->nullable();
             $table->timestamps();
         });
     }
