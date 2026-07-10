@@ -34,7 +34,7 @@ class EnsureBusinessMembership
 
         $this->ensureBusinessMemberHasRequiredRole($user, $business, $minimumRole);
 
-        if ($request->route('current_business') && ! $user->isCurrentBusiness($business)) {
+        if ($request->route('business') && ! $user->isCurrentBusiness($business)) {
             $user->switchBusiness($business);
         }
 
@@ -67,7 +67,7 @@ class EnsureBusinessMembership
      */
     protected function business(Request $request): ?Business
     {
-        $business = $request->route('current_business') ?? $request->route('business');
+        $business = $request->route('business');
 
         if (is_string($business)) {
             $business = Business::where('slug', $business)->first();

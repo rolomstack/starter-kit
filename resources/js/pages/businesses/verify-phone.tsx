@@ -68,12 +68,12 @@ export default function BusinessVerifyPhone({
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        post(verify.url({ current_business: business.slug }));
+        post(verify.url({ business: business.slug }));
     };
 
     const resendCode = (e: React.FormEvent) => {
         e.preventDefault();
-        post(resend.url({ current_business: business.slug }), {
+        post(resend.url({ business: business.slug }), {
             onSuccess: () => {
                 toast.success(
                     'A new verification code has been sent to your email.',
@@ -117,13 +117,8 @@ export default function BusinessVerifyPhone({
 
             {/* Header section with active business and optional switcher */}
             <div className="flex items-center justify-between border-b pb-4 mb-6">
-                <div className="text-left text-sm font-medium text-muted-foreground">
-                    Active Business:{' '}
-                    <span className="font-semibold text-foreground block md:inline-block">
-                        {business.name}
-                    </span>
-                </div>
-                {hasMultipleBusinesses && <BusinessSwitcher inHeader />}
+                <div className="text-left text-sm font-medium text-muted-foreground">Active Business:</div>
+                {hasMultipleBusinesses && <BusinessSwitcher inline />}
             </div>
 
             {status === 'code-sent' && (

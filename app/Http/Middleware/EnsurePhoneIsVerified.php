@@ -36,7 +36,7 @@ class EnsurePhoneIsVerified
 
         return $request->expectsJson()
             ? abort(403, 'The business phone number is not verified.')
-            : redirect()->route('businesses.phone.notice', ['current_business' => $business]);
+            : redirect()->route('businesses.phone.notice', ['business' => $business]);
     }
 
     /**
@@ -44,7 +44,7 @@ class EnsurePhoneIsVerified
      */
     protected function resolveBusiness(Request $request): ?Business
     {
-        $business = $request->route('current_business') ?? $request->route('business');
+        $business = $request->route('business') ?? $request->route('business');
 
         return is_string($business)
             ? Business::where('slug', $business)->first()

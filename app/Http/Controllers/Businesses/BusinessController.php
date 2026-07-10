@@ -85,11 +85,11 @@ class BusinessController extends Controller
 
             Inertia::flash('toast', ['type' => 'success', 'message' => __('Business created.')]);
 
-            return to_route('businesses.phone.notice', ['current_business' => $business->slug]);
+            return to_route('businesses.phone.notice', ['business' => $business->slug]);
         }
 
         if ($user->businesses()->count() === 1) {
-            return to_route('dashboard', ['current_business' => $business->slug]);
+            return to_route('dashboard', ['business' => $business->slug]);
         }
 
         return to_route('businesses.edit', ['business' => $business->slug]);
@@ -205,7 +205,7 @@ class BusinessController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Business updated.')]);
 
         if ($phoneChanged && $newPhone && ! $hasUsedPhoneBefore) {
-            return to_route('businesses.phone.notice', ['current_business' => $business->slug]);
+            return to_route('businesses.phone.notice', ['business' => $business->slug]);
         }
 
         return to_route('businesses.edit', ['business' => $business->slug]);

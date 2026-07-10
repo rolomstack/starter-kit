@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BusinessInvitation;
+use Illuminate\Database\Query\Expression;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -15,7 +16,7 @@ class DashboardController extends Controller
 
         $pendingInvitations = BusinessInvitation::query()
             ->with(['inviter', 'business'])
-            ->whereRaw('LOWER(email) = ?', [$email])
+            ->whereRaw(new Expression('LOWER(email) = ?'), [$email])
             ->whereNull('accepted_at')
             ->where(fn ($query) => $query
                 ->whereNull('expires_at')

@@ -243,7 +243,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                             </DropdownMenuContent>
                         </DropdownMenu>
 
-                        <BusinessSwitcher inHeader />
+                        <BusinessSwitcher inline />
                     </div>
                 </div>
             </div>

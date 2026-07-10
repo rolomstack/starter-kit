@@ -1,4 +1,4 @@
-import { Form, Head, router, usePage } from '@inertiajs/react';
+import { Form, Head, Link, router, usePage } from '@inertiajs/react';
 import { ChevronDown, Mail, UserPlus, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import CancelInvitationModal from '@/components/cancel-invitation-modal';
@@ -35,6 +35,7 @@ import {
 import { useInitials } from '@/hooks/use-initials';
 import { edit, index, update } from '@/routes/businesses';
 import { update as updateMember } from '@/routes/businesses/members';
+import { index as subscriptionsIndex } from '@/routes/businesses/subscriptions';
 import type {
     RoleOption,
     Business,
@@ -219,6 +220,24 @@ export default function BusinessEdit({
                             <Heading variant="small" title={business.name} />
                         </>
                     )}
+                </div>
+
+                <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                        <Heading
+                            variant="small"
+                            title="Subscription"
+                            description="Manage your business subscription plan and billing"
+                        />
+                        <Button
+                            variant="outline"
+                            asChild
+                        >
+                            <Link href={subscriptionsIndex(business.slug)}>
+                                Manage Subscription
+                            </Link>
+                        </Button>
+                    </div>
                 </div>
 
                 <div className="space-y-6">

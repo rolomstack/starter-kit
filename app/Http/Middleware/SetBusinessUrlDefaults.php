@@ -18,7 +18,7 @@ class SetBusinessUrlDefaults
     {
         if ($currentBusiness = $request->user()?->currentBusiness) {
             URL::defaults([
-                'current_business' => $currentBusiness->slug,
+                'business' => $currentBusiness->slug,
                 'business' => $currentBusiness->slug,
             ]);
         }

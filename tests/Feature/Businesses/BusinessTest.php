@@ -204,7 +204,7 @@ test('updating to a new phone number redirects to verification notice if not ver
     expect($business->phone_country)->toEqual(Country::US);
     expect($business->hasVerifiedPhone())->toBeFalse();
 
-    $response->assertRedirect(route('businesses.phone.notice', ['current_business' => $business->slug]));
+    $response->assertRedirect(route('businesses.phone.notice', ['business' => $business->slug]));
 
     Notification::assertSentTo(
         $business,

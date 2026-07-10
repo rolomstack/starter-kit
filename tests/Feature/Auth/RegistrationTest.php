@@ -69,7 +69,7 @@ test('new users can register and join business immediately if invited', function
     $user = User::where('email', 'test@example.com')->first();
     expect($user->belongsToBusiness($business))->toBeTrue();
 
-    $response->assertRedirect(route('dashboard', ['current_business' => $business->slug]));
+    $response->assertRedirect(route('dashboard', ['business' => $business->slug]));
 });
 
 test('business creation fails with invalid phone country code during onboarding', function () {
@@ -124,5 +124,5 @@ test('users can complete setup business onboarding', function () {
     expect($business)->not->toBeNull();
     expect($business->phone)->toBe('555-555-5555');
 
-    $response->assertRedirect(route('businesses.phone.notice', ['current_business' => $business->slug]));
+    $response->assertRedirect(route('businesses.phone.notice', ['business' => $business->slug]));
 });

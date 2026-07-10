@@ -88,7 +88,7 @@ trait HasBusinesses
         $this->update(['current_business_id' => $business->id]);
         $this->setRelation('currentBusiness', $business);
 
-        URL::defaults(['current_business' => $business->slug]);
+        URL::defaults(['business' => $business->slug]);
 
         return true;
     }

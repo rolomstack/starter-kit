@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Concerns\GeneratesUniqueBusinessSlugs;
 use App\Concerns\HasPhoneVerification;
+use App\Concerns\HasSubscriptions;
 use App\Contracts\MustVerifyPhone;
 use App\Enums\BusinessRole;
 use App\Enums\Country;
@@ -38,7 +39,7 @@ use Illuminate\Support\Carbon;
 class Business extends Model implements MustVerifyPhone
 {
     /** @use HasFactory<BusinessFactory> */
-    use GeneratesUniqueBusinessSlugs, HasFactory, HasPhoneVerification, Notifiable, SoftDeletes;
+    use GeneratesUniqueBusinessSlugs, HasFactory, HasPhoneVerification, HasSubscriptions, Notifiable, SoftDeletes;
 
     /**
      * Bootstrap the model and its traits.

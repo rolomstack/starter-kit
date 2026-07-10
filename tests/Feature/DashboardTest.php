@@ -1,10 +1,15 @@
 <?php
 
 use App\Enums\BusinessRole;
+use App\Http\Middleware\EnsureBusinessIsSubscribed;
 use App\Models\Business;
 use App\Models\BusinessInvitation;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
+
+beforeEach(function () {
+    $this->withoutMiddleware(EnsureBusinessIsSubscribed::class);
+});
 
 test('guests are redirected to the login page', function () {
     $user = User::factory()->create();

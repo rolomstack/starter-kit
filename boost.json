@@ -1,6 +1,7 @@
 {
     "agents": [
-        "junie"
+        "junie",
+        "antigravity"
     ],
     "cloud": false,
     "guidelines": true,

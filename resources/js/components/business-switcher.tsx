@@ -16,10 +16,10 @@ import type { PageProps } from '@/types';
 import type { Business } from '@/types';
 
 type BusinessSwitcherProps = {
-    inHeader?: boolean;
+    inline?: boolean;
 };
 
-export function BusinessSwitcher({ inHeader = false }: BusinessSwitcherProps) {
+export function BusinessSwitcher({ inline = false }: BusinessSwitcherProps) {
     const page = usePage<PageProps>();
     const isMobile = useIsMobile();
     const currentBusiness = page.props.currentBusiness;
@@ -62,29 +62,29 @@ export function BusinessSwitcher({ inHeader = false }: BusinessSwitcherProps) {
                     variant="ghost"
                     data-test="business-switcher-trigger"
                     className={
-                        inHeader
-                            ? 'h-8 gap-1 px-2'
+                        inline
+                            ? 'h-11 gap-1 px-2'
                             : 'w-full justify-start px-2 has-[>svg]:px-2 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
                     }
                 >
                     <Users
                         className={
-                            inHeader
+                            inline
                                 ? 'hidden'
                                 : 'hidden size-4 shrink-0 group-data-[collapsible=icon]:block'
                         }
                     />
                     <div
                         className={
-                            inHeader
+                            inline
                                 ? 'grid flex-1 text-left text-sm leading-tight'
                                 : 'grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden'
                         }
                     >
                         <span
                             className={
-                                inHeader
-                                    ? 'max-w-[120px] truncate font-medium'
+                                inline
+                                    ? 'w-full max-w-30 truncate font-medium'
                                     : 'truncate font-semibold'
                             }
                         >
@@ -93,7 +93,7 @@ export function BusinessSwitcher({ inHeader = false }: BusinessSwitcherProps) {
                     </div>
                     <ChevronsUpDown
                         className={
-                            inHeader
+                            inline
                                 ? 'size-4 opacity-50'
                                 : 'ml-auto group-data-[collapsible=icon]:hidden'
                         }
@@ -102,13 +102,13 @@ export function BusinessSwitcher({ inHeader = false }: BusinessSwitcherProps) {
             </DropdownMenuTrigger>
             <DropdownMenuContent
                 className={
-                    inHeader
+                    inline
                         ? 'w-56'
                         : 'w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg'
                 }
-                side={inHeader ? undefined : isMobile ? 'bottom' : 'right'}
-                align={inHeader ? 'end' : 'start'}
-                sideOffset={inHeader ? undefined : 4}
+                side={inline ? undefined : isMobile ? 'bottom' : 'right'}
+                align={inline ? 'end' : 'start'}
+                sideOffset={inline ? undefined : 4}
             >
                 <DropdownMenuLabel className="text-xs text-muted-foreground">
                     Businesses
@@ -118,7 +118,7 @@ export function BusinessSwitcher({ inHeader = false }: BusinessSwitcherProps) {
                         key={business.id}
                         data-test="business-switcher-item"
                         className={
-                            inHeader
+                            inline
                                 ? 'cursor-pointer gap-2'
                                 : 'cursor-pointer gap-2 p-2'
                         }
@@ -128,7 +128,7 @@ export function BusinessSwitcher({ inHeader = false }: BusinessSwitcherProps) {
                         {currentBusiness?.id === business.id && (
                             <Check
                                 className={
-                                    inHeader
+                                    inline
                                         ? 'ml-auto size-4'
                                         : 'ml-auto h-4 w-4'
                                 }
@@ -141,13 +141,13 @@ export function BusinessSwitcher({ inHeader = false }: BusinessSwitcherProps) {
                     <DropdownMenuItem
                         data-test="business-switcher-new-business"
                         className={
-                            inHeader
+                            inline
                                 ? 'cursor-pointer gap-2'
                                 : 'cursor-pointer gap-2 p-2'
                         }
                         onSelect={(event) => event.preventDefault()}
                     >
-                        <Plus className={inHeader ? 'size-4' : 'h-4 w-4'} />
+                        <Plus className={inline ? 'size-4' : 'h-4 w-4'} />
                         <span className="text-muted-foreground">
                             New business
                         </span>

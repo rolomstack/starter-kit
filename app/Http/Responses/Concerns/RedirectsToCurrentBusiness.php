@@ -20,7 +20,7 @@ trait RedirectsToCurrentBusiness
             return route('businesses.create');
         }
 
-        URL::defaults(['current_business' => $business->slug]);
+        URL::defaults(['business' => $business->slug]);
 
         return "/{$business->slug}{$redirect}";
     }

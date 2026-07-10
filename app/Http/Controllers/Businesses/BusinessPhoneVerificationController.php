@@ -17,21 +17,21 @@ class BusinessPhoneVerificationController extends Controller
     /**
      * Show the business phone verification notice page.
      */
-    public function show(Request $request, Business $current_business): RedirectResponse|Response
+    public function show(Request $request, Business $business): RedirectResponse|Response
     {
-        if ($current_business->hasVerifiedPhone()) {
-            return redirect()->intended(route('dashboard', ['current_business' => $current_business->slug]));
+        if ($business->hasVerifiedPhone()) {
+            return redirect()->intended(route('dashboard', ['business' => $business->slug]));
         }
 
         return Inertia::render('businesses/verify-phone', [
             'business' => [
-                'name' => $current_business->name,
-                'slug' => $current_business->slug,
-                'email' => $current_business->email,
-                'phone' => $current_business->phone,
-                'phoneCountry' => $current_business->phone_country?->value,
+                'name' => $business->name,
+                'slug' => $business->slug,
+                'email' => $business->email,
+                'phone' => $business->phone,
+                'phoneCountry' => $business->phone_country?->value,
             ],
-            'canUpdatePhone' => $request->user()->ownsBusiness($current_business),
+            'canUpdatePhone' => $request->user()->ownsBusiness($business),
             'countries' => collect(Country::cases())->map(fn (Country $country) => [
                 'code' => $country->value,
                 'name' => $country->label(),
@@ -46,10 +46,10 @@ class BusinessPhoneVerificationController extends Controller
     /**
      * Verify the business's phone number using the verification code.
      */
-    public function verify(Request $request, Business $current_business): RedirectResponse
+    public function verify(Request $request, Business $business): RedirectResponse
     {
-        if ($current_business->hasVerifiedPhone()) {
-            return redirect()->intended(route('dashboard', ['current_business' => $current_business->slug]));
+        if ($business->hasVerifiedPhone()) {
+            return redirect()->intended(route('dashboard', ['business' => $business->slug]));
         }
 
         $request->validate([
@@ -57,8 +57,8 @@ class BusinessPhoneVerificationController extends Controller
                 'required',
                 'string',
                 'size:6',
-                function (string $attribute, mixed $value, Closure $fail) use ($current_business) {
-                    $exists = $current_business->codes()
+                function (string $attribute, mixed $value, Closure $fail) use ($business) {
+                    $exists = $business->codes()
                         ->phoneVerification()
                         ->where('code', $value)
                         ->where('expires_at', '>=', now())
@@ -71,25 +71,25 @@ class BusinessPhoneVerificationController extends Controller
             ],
         ]);
 
-        $current_business->codes()
+        $business->codes()
             ->phoneVerification()
             ->delete();
 
-        $current_business->markPhoneAsVerified();
+        $business->markPhoneAsVerified();
 
-        return redirect()->intended(route('dashboard', ['current_business' => $current_business->slug]));
+        return redirect()->intended(route('dashboard', ['business' => $business->slug]));
     }
 
     /**
      * Resend the business's phone verification code.
      */
-    public function resend(Request $request, Business $current_business): RedirectResponse
+    public function resend(Request $request, Business $business): RedirectResponse
     {
-        if ($current_business->hasVerifiedPhone()) {
-            return redirect()->intended(route('dashboard', ['current_business' => $current_business->slug]));
+        if ($business->hasVerifiedPhone()) {
+            return redirect()->intended(route('dashboard', ['business' => $business->slug]));
         }
 
-        $current_business->sendPhoneVerificationNotification();
+        $business->sendPhoneVerificationNotification();
 
         return back()->with('status', 'code-sent');
     }

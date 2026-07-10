@@ -60,7 +60,7 @@ test('passkey login response redirects to the current business dashboard', funct
 
     $jsonResponse = app(PasskeyLoginResponse::class)->toResponse($request);
 
-    expect($jsonResponse->getData()->redirect)->toBe(route('dashboard', ['current_business' => $user->personalBusiness()->slug]));
+    expect($jsonResponse->getData()->redirect)->toBe(route('dashboard', ['business' => $user->personalBusiness()->slug]));
 });
 
 test('users with two factor enabled are redirected to two factor challenge', function () {

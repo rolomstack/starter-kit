@@ -16,7 +16,7 @@ test('business phone verification screen can be rendered', function () {
     $business->members()->attach($user, ['role' => BusinessRole::Owner->value]);
     $user->switchBusiness($business);
 
-    $response = $this->actingAs($user)->get(route('businesses.phone.notice', ['current_business' => $business->slug]));
+    $response = $this->actingAs($user)->get(route('businesses.phone.notice', ['business' => $business->slug]));
 
     $response->assertOk();
 });
@@ -30,9 +30,9 @@ test('unverified business phone redirects to verification notice', function () {
     $business->members()->attach($user, ['role' => BusinessRole::Owner->value]);
     $user->switchBusiness($business);
 
-    $response = $this->actingAs($user)->get(route('dashboard', ['current_business' => $business->slug]));
+    $response = $this->actingAs($user)->get(route('dashboard', ['business' => $business->slug]));
 
-    $response->assertRedirect(route('businesses.phone.notice', ['current_business' => $business->slug]));
+    $response->assertRedirect(route('businesses.phone.notice', ['business' => $business->slug]));
 });
 
 test('business phone can be verified with correct token', function () {
@@ -53,12 +53,12 @@ test('business phone can be verified with correct token', function () {
         'expires_at' => now()->addMinutes(15),
     ]);
 
-    $response = $this->actingAs($user)->post(route('businesses.phone.verify', ['current_business' => $business->slug]), [
+    $response = $this->actingAs($user)->post(route('businesses.phone.verify', ['business' => $business->slug]), [
         'code' => $token,
     ]);
 
     expect($business->fresh()->hasVerifiedPhone())->toBeTrue();
-    $response->assertRedirect(route('dashboard', ['current_business' => $business->slug]));
+    $response->assertRedirect(route('dashboard', ['business' => $business->slug]));
 });
 
 test('business phone verification fails with incorrect token', function () {
@@ -78,7 +78,7 @@ test('business phone verification fails with incorrect token', function () {
         'expires_at' => now()->addMinutes(15),
     ]);
 
-    $response = $this->actingAs($user)->post(route('businesses.phone.verify', ['current_business' => $business->slug]), [
+    $response = $this->actingAs($user)->post(route('businesses.phone.verify', ['business' => $business->slug]), [
         'code' => '654321', // wrong code
     ]);
 
@@ -98,7 +98,7 @@ test('business phone verification code can be resent', function () {
 
     Notification::fake();
 
-    $response = $this->actingAs($user)->post(route('businesses.phone.resend', ['current_business' => $business->slug]));
+    $response = $this->actingAs($user)->post(route('businesses.phone.resend', ['business' => $business->slug]));
 
     $response->assertRedirect();
     $response->assertSessionHas('status', 'code-sent');
@@ -125,7 +125,7 @@ test('business creation redirects to phone verification notice if phone is not v
     expect($business)->not->toBeNull();
     expect($business->hasVerifiedPhone())->toBeFalse();
 
-    $response->assertRedirect(route('businesses.phone.notice', ['current_business' => $business->slug]));
+    $response->assertRedirect(route('businesses.phone.notice', ['business' => $business->slug]));
 
     Notification::assertSentTo(
         $business,
@@ -180,7 +180,7 @@ test('owner can update business phone number from verification screen', function
         'phone_country' => 'US',
     ]);
 
-    $response->assertRedirect(route('businesses.phone.notice', ['current_business' => $business->slug]));
+    $response->assertRedirect(route('businesses.phone.notice', ['business' => $business->slug]));
 
     $business = $business->fresh();
     expect($business->phone)->toBe('2015550123');
@@ -210,7 +210,7 @@ test('non-owner cannot update business phone number from verification screen', f
         'phone_country' => 'US',
     ]);
 
-    $response->assertRedirect(route('businesses.phone.notice', ['current_business' => $business->slug]));
+    $response->assertRedirect(route('businesses.phone.notice', ['business' => $business->slug]));
     expect($business->fresh()->phone)->toBe('1234567890');
 });
 
@@ -232,7 +232,7 @@ test('admin without ownership cannot update business phone number', function () 
         'phone_country' => 'US',
     ]);
 
-    $response->assertRedirect(route('businesses.phone.notice', ['current_business' => $business->slug]));
+    $response->assertRedirect(route('businesses.phone.notice', ['business' => $business->slug]));
     expect($business->fresh()->phone)->toBe('1234567890');
 });
 

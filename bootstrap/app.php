@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureBusinessIsSubscribed;
 use App\Http\Middleware\EnsurePhoneIsVerified;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
@@ -18,9 +19,11 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
+        $middleware->preventRequestForgery(except: ['webhooks/paystack']);
 
         $middleware->alias([
             'verified.phone' => EnsurePhoneIsVerified::class,
+            'subscribed' => EnsureBusinessIsSubscribed::class,
         ]);
 
         $middleware->web(append: [
