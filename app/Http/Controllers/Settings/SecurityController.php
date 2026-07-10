@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Settings;
 
+use App\Actions\Settings\UpdatePassword;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\PasswordUpdateRequest;
 use App\Http\Requests\Settings\TwoFactorAuthenticationRequest;
@@ -53,11 +54,9 @@ class SecurityController extends Controller
     /**
      * Update the user's password.
      */
-    public function update(PasswordUpdateRequest $request): RedirectResponse
+    public function update(PasswordUpdateRequest $request, UpdatePassword $updatePassword): RedirectResponse
     {
-        $request->user()->update([
-            'password' => $request->password,
-        ]);
+        $updatePassword->execute($request->user(), $request->password);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Password updated.')]);
 

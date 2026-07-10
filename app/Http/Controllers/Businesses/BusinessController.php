@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Businesses;
 
 use App\Actions\Businesses\CreateBusiness;
+use App\Actions\Businesses\DeleteBusiness;
+use App\Actions\Businesses\LeaveBusiness;
+use App\Actions\Businesses\UpdateBusiness;
 use App\Enums\Country;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Businesses\DeleteBusinessRequest;
@@ -12,7 +15,6 @@ use App\Models\Business;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -43,34 +45,17 @@ class BusinessController extends Controller
         $validated = $request->validated();
         $user = $request->user();
 
-        $business = DB::transaction(function () use ($createBusiness, $user, $validated, &$hasUsedPhoneBefore) {
-            $business = $createBusiness->handle(
-                $user,
-                $validated['name'],
-                $validated['email'] ?? $user->email,
-                phone: $validated['phone'] ?? null,
-                phoneCountry: isset($validated['phone_country']) ? Country::tryFrom($validated['phone_country']) : null
-            );
+        [$business, $requiresVerification] = $createBusiness->execute(
+            $user,
+            $validated['name'],
+            $validated['email'] ?? $user->email,
+            phone: $validated['phone'] ?? null,
+            phoneCountry: isset($validated['phone_country']) ? Country::tryFrom($validated['phone_country']) : null
+        );
 
-            if ($business->phone) {
-                $hasUsedPhoneBefore = $user->businesses()
-                    ->where('phone', $business->phone)
-                    ->whereNotNull('phone_verified_at')
-                    ->exists();
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Business created.')]);
 
-                if ($hasUsedPhoneBefore) {
-                    $business->markPhoneAsVerified();
-                }
-            }
-
-            return $business;
-        });
-
-        if ($business->phone && ! $business->hasVerifiedPhone()) {
-            $business->sendPhoneVerificationNotification();
-
-            Inertia::flash('toast', ['type' => 'success', 'message' => __('Business created.')]);
-
+        if ($requiresVerification) {
             return to_route('businesses.phone.notice', ['business' => $business->slug]);
         }
 
@@ -114,59 +99,17 @@ class BusinessController extends Controller
     /**
      * Update the specified business.
      */
-    public function update(SaveBusinessRequest $request, Business $business): RedirectResponse
+    public function update(SaveBusinessRequest $request, Business $business, UpdateBusiness $updateBusiness): RedirectResponse
     {
         Gate::authorize('update', $business);
 
         $user = $request->user();
-        $oldPhone = $business->phone;
-        $newPhone = $request->validated('phone');
 
-        $phoneChanged = $newPhone !== $oldPhone;
-
-        if ($phoneChanged) {
-            abort_unless($user->ownsBusiness($business), 403, 'Only the business owner can update the phone number.');
-        }
-
-        $hasUsedPhoneBefore = false;
-
-        $business = DB::transaction(function () use ($request, $business, $phoneChanged, $newPhone, $user, &$hasUsedPhoneBefore) {
-            $business = Business::whereKey($business->id)->lockForUpdate()->firstOrFail();
-
-            $business->fill([
-                'name' => $request->validated('name'),
-                'email' => $request->validated('email'),
-                'phone' => $newPhone,
-                'phone_country' => $request->validated('phone_country'),
-            ]);
-
-            if ($phoneChanged) {
-                $business->phone_verified_at = null;
-            }
-
-            $business->save();
-
-            if ($phoneChanged && $newPhone) {
-                $hasUsedPhoneBefore = $user->businesses()
-                    ->where('phone', $newPhone)
-                    ->whereNotNull('phone_verified_at')
-                    ->exists();
-
-                if ($hasUsedPhoneBefore) {
-                    $business->markPhoneAsVerified();
-                }
-            }
-
-            return $business;
-        });
-
-        if ($phoneChanged && $newPhone && ! $hasUsedPhoneBefore) {
-            $business->sendPhoneVerificationNotification();
-        }
+        [$business, $requiresVerification] = $updateBusiness->execute($user, $business, $request->validated());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Business updated.')]);
 
-        if ($phoneChanged && $newPhone && ! $hasUsedPhoneBefore) {
+        if ($requiresVerification) {
             return to_route('businesses.phone.notice', ['business' => $business->slug]);
         }
 
@@ -188,23 +131,11 @@ class BusinessController extends Controller
     /**
      * Leave the specified business.
      */
-    public function leave(Request $request, Business $business): RedirectResponse
+    public function leave(Request $request, Business $business, LeaveBusiness $leaveBusiness): RedirectResponse
     {
         Gate::authorize('leave', $business);
 
-        $user = $request->user();
-
-        $fallbackBusiness = $user->isCurrentBusiness($business)
-            ? $user->fallbackBusiness($business)
-            : null;
-
-        $business->memberships()
-            ->where('user_id', $user->id)
-            ->delete();
-
-        if ($fallbackBusiness) {
-            $user->switchBusiness($fallbackBusiness);
-        }
+        $leaveBusiness->execute($request->user(), $business);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('You left the business ":name"', ['name' => $business->name])]);
 
@@ -214,26 +145,9 @@ class BusinessController extends Controller
     /**
      * Delete the specified business.
      */
-    public function destroy(DeleteBusinessRequest $request, Business $business): RedirectResponse
+    public function destroy(DeleteBusinessRequest $request, Business $business, DeleteBusiness $deleteBusiness): RedirectResponse
     {
-        $user = $request->user();
-        $fallbackBusiness = $user->isCurrentBusiness($business)
-            ? $user->fallbackBusiness($business)
-            : null;
-
-        DB::transaction(function () use ($user, $business) {
-            User::where('current_business_id', $business->id)
-                ->where('id', '!=', $user->id)
-                ->each(fn (User $affectedUser) => $affectedUser->switchBusiness($affectedUser->personalBusiness()));
-
-            $business->invitations()->delete();
-            $business->memberships()->delete();
-            $business->delete();
-        });
-
-        if ($fallbackBusiness) {
-            $user->switchBusiness($fallbackBusiness);
-        }
+        $deleteBusiness->execute($request->user(), $business);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Business deleted.')]);
 

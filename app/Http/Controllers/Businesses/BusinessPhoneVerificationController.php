@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Businesses;
 
+use App\Actions\Businesses\VerifyBusinessPhone;
 use App\Enums\Country;
 use App\Http\Controllers\Controller;
 use App\Models\Business;
@@ -46,7 +47,7 @@ class BusinessPhoneVerificationController extends Controller
     /**
      * Verify the business's phone number using the verification code.
      */
-    public function verify(Request $request, Business $business): RedirectResponse
+    public function verify(Request $request, Business $business, VerifyBusinessPhone $verifyBusinessPhone): RedirectResponse
     {
         if ($business->hasVerifiedPhone()) {
             return redirect()->intended(route('dashboard', ['business' => $business->slug]));
@@ -71,11 +72,7 @@ class BusinessPhoneVerificationController extends Controller
             ],
         ]);
 
-        $business->codes()
-            ->phoneVerification()
-            ->delete();
-
-        $business->markPhoneAsVerified();
+        $verifyBusinessPhone->execute($business);
 
         return redirect()->intended(route('dashboard', ['business' => $business->slug]));
     }

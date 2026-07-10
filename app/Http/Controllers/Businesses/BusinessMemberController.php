@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Businesses;
 
+use App\Actions\Businesses\RemoveBusinessMember;
+use App\Actions\Businesses\UpdateBusinessMemberRole;
 use App\Enums\BusinessRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Businesses\UpdateBusinessMemberRequest;
@@ -61,16 +63,15 @@ class BusinessMemberController extends Controller
     /**
      * Update the specified business member's role.
      */
-    public function update(UpdateBusinessMemberRequest $request, Business $business, User $user): RedirectResponse
-    {
+    public function update(
+        UpdateBusinessMemberRequest $request,
+        Business $business,
+        User $user,
+        UpdateBusinessMemberRole $updateBusinessMemberRole
+    ): RedirectResponse {
         Gate::authorize('updateMember', $business);
 
-        $newRole = BusinessRole::from($request->validated('role'));
-
-        $business->memberships()
-            ->where('user_id', $user->id)
-            ->firstOrFail()
-            ->update(['role' => $newRole]);
+        $updateBusinessMemberRole->execute($business, $user, $request->validated('role'));
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Member role updated.')]);
 
@@ -80,19 +81,14 @@ class BusinessMemberController extends Controller
     /**
      * Remove the specified business member.
      */
-    public function destroy(Business $business, User $user): RedirectResponse
-    {
+    public function destroy(
+        Business $business,
+        User $user,
+        RemoveBusinessMember $removeBusinessMember
+    ): RedirectResponse {
         Gate::authorize('removeMember', $business);
 
-        abort_if($business->owner()?->is($user), 403, __('The business owner cannot be removed.'));
-
-        $business->memberships()
-            ->where('user_id', $user->id)
-            ->delete();
-
-        if ($user->isCurrentBusiness($business)) {
-            $user->switchBusiness($user->personalBusiness());
-        }
+        $removeBusinessMember->execute($business, $user);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Member removed.')]);
 

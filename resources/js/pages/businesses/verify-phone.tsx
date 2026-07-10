@@ -89,15 +89,12 @@ export default function BusinessVerifyPhone({
 
     const submitPhoneUpdate = (e: React.FormEvent) => {
         e.preventDefault();
-        updatePhoneForm.patch(
-            update.url({ business: business.slug }),
-            {
-                onSuccess: () => {
-                    setIsEditingPhone(false);
-                    toast.success('Phone number updated successfully.');
-                },
+        updatePhoneForm.patch(update.url({ business: business.slug }), {
+            onSuccess: () => {
+                setIsEditingPhone(false);
+                toast.success('Phone number updated successfully.');
             },
-        );
+        });
     };
 
     const cancelEditing = () => {
@@ -116,8 +113,10 @@ export default function BusinessVerifyPhone({
             <Head title={`Verify Phone - ${business.name}`} />
 
             {/* Header section with active business and optional switcher */}
-            <div className="flex items-center justify-between border-b pb-4 mb-6">
-                <div className="text-left text-sm font-medium text-muted-foreground">Active Business:</div>
+            <div className="mb-6 flex items-center justify-between border-b pb-4">
+                <div className="text-left text-sm font-medium text-muted-foreground">
+                    Active Business:
+                </div>
                 {hasMultipleBusinesses && <BusinessSwitcher inline />}
             </div>
 
@@ -139,7 +138,10 @@ export default function BusinessVerifyPhone({
                                 value={phoneCountry}
                                 onValueChange={(val) => {
                                     setPhoneCountry(val);
-                                    updatePhoneForm.setData('phone_country', val);
+                                    updatePhoneForm.setData(
+                                        'phone_country',
+                                        val,
+                                    );
                                 }}
                                 disabled={updatePhoneForm.processing}
                             >
@@ -248,7 +250,7 @@ export default function BusinessVerifyPhone({
                         </InputOTP>
                         {errors.code && <InputError message={errors.code} />}
 
-                        <div className="text-center text-sm text-muted-foreground mt-2">
+                        <div className="mt-2 text-center text-sm text-muted-foreground">
                             {business.phone ? (
                                 <>
                                     Code sent to:{' '}
@@ -263,7 +265,7 @@ export default function BusinessVerifyPhone({
                                 <button
                                     type="button"
                                     onClick={() => setIsEditingPhone(true)}
-                                    className="ml-2 text-sm text-primary font-medium hover:underline cursor-pointer border-0 bg-transparent"
+                                    className="ml-2 cursor-pointer border-0 bg-transparent text-sm font-medium text-primary hover:underline"
                                     data-test="change-phone-button"
                                 >
                                     Change

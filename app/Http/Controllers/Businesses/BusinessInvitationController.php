@@ -3,16 +3,15 @@
 namespace App\Http\Controllers\Businesses;
 
 use App\Actions\Businesses\AcceptBusinessInvitation;
-use App\Enums\BusinessRole;
+use App\Actions\Businesses\CancelBusinessInvitation;
+use App\Actions\Businesses\CreateBusinessInvitation;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Businesses\CreateBusinessInvitationRequest;
 use App\Http\Requests\Businesses\RespondToBusinessInvitationRequest;
 use App\Models\Business;
 use App\Models\BusinessInvitation;
-use App\Notifications\Businesses\BusinessInvitation as BusinessInvitationNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Notification;
 use Inertia\Inertia;
 
 class BusinessInvitationController extends Controller
@@ -20,19 +19,19 @@ class BusinessInvitationController extends Controller
     /**
      * Store a newly created invitation.
      */
-    public function store(CreateBusinessInvitationRequest $request, Business $business): RedirectResponse
-    {
+    public function store(
+        CreateBusinessInvitationRequest $request,
+        Business $business,
+        CreateBusinessInvitation $createBusinessInvitation
+    ): RedirectResponse {
         Gate::authorize('inviteMember', $business);
 
-        $invitation = $business->invitations()->create([
-            'email' => $request->validated('email'),
-            'role' => BusinessRole::from($request->validated('role')),
-            'invited_by' => $request->user()->id,
-            'expires_at' => now()->addDays(3),
-        ]);
-
-        Notification::route('mail', $invitation->email)
-            ->notify(new BusinessInvitationNotification($invitation));
+        $createBusinessInvitation->execute(
+            $business,
+            $request->validated('email'),
+            $request->validated('role'),
+            $request->user()
+        );
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Invitation sent.')]);
 
@@ -42,13 +41,16 @@ class BusinessInvitationController extends Controller
     /**
      * Cancel the specified invitation.
      */
-    public function destroy(Business $business, BusinessInvitation $invitation): RedirectResponse
-    {
+    public function destroy(
+        Business $business,
+        BusinessInvitation $invitation,
+        CancelBusinessInvitation $cancelBusinessInvitation
+    ): RedirectResponse {
         abort_unless($invitation->business_id === $business->id, 404);
 
         Gate::authorize('cancelInvitation', $business);
 
-        $invitation->delete();
+        $cancelBusinessInvitation->execute($invitation);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Invitation cancelled.')]);
 

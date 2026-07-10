@@ -54,7 +54,6 @@ export function AppSidebar() {
         },
     ];
 
-
     const footerNavItems: NavItem[] = [];
 
     return (

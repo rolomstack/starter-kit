@@ -1,5 +1,4 @@
-import { Form, Head, Link, router, usePage } from '@inertiajs/react';
-import { ChevronDown, Mail, UserPlus, X } from 'lucide-react';
+import { Form, Head, usePage } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
 import DeleteBusinessModal from '@/components/delete-business-modal';
 import Heading from '@/components/heading';
