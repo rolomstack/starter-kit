@@ -39,11 +39,11 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
             href: teamsIndex({ business: currentBusinessSlug }),
             icon: null,
         },
-        {
+        ...(props.currentBusiness?.role === 'owner' ? [{
             title: 'Subscription',
             href: subscriptionsIndex({ business: currentBusinessSlug }),
             icon: null,
-        },
+        }] : []),
         {
             title: 'Appearance',
             href: editAppearance(),

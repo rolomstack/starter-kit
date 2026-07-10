@@ -59,10 +59,11 @@ export default function TeamsIndex({
         useState<BusinessInvitation | null>(null);
 
     const updateMemberRole = (member: BusinessMember, newRole: string) => {
-        router.visit(updateMember([business.slug, member.id]).url, {
-            data: { role: newRole },
-            preserveScroll: true,
-        });
+        router.patch(
+            updateMember([business.slug, member.id]).url,
+            { role: newRole },
+            { preserveScroll: true },
+        );
     };
 
     const confirmRemoveMember = (member: BusinessMember) => {

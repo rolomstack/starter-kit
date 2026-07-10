@@ -33,7 +33,7 @@ export default function CancelInvitationModal({
             return;
         }
 
-        router.visit(destroyInvitation([business.slug, invitation.code]), {
+        router.delete(destroyInvitation([business.slug, invitation.code]).url, {
             onStart: () => setProcessing(true),
             onFinish: () => setProcessing(false),
             onSuccess: () => onOpenChange(false),
